@@ -1,11 +1,18 @@
+#---------- SETUP / CONFIG ----------#
+
 # Import requirements
 import os
 from cs50 import SQL
 from flask import Flask, flash, redirect, render_template, request, session
 from flask_session import Session
-#import "/f1/config.py"
-#import "/f1/server.py"
-#import "/f1/telemetry_state.py"
+from helpers import apology, login_required
+
+#import f1/config.py
+#import f1/server.py
+#import f1/telemetry_state.py
+
+#import lmu/server.py
+#import lmu/telemetry.py
 
 
 # Configure application
@@ -28,6 +35,100 @@ def after_request(response):
     return response
 
 
+
+#---------- LOGIN / LOGOUT / REGISTER ----------#
+"""FROM CS50x's FINANCE PROBLEM SET"""
+
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    """Log user in"""
+
+    # Forget any user_id
+    session.clear()
+
+    # User reached route via POST (as by submitting a form via POST)
+    if request.method == "POST":
+        # Ensure username was submitted
+        if not request.form.get("username"):
+            return apology("must provide username", 403)
+
+        # Ensure password was submitted
+        elif not request.form.get("password"):
+            return apology("must provide password", 403)
+
+        # Query database for username
+        rows = db.execute("SELECT * FROM users WHERE username = ?", request.form.get("username"))
+
+        # Ensure username exists and password is correct
+        if len(rows) != 1 or not check_password_hash(rows[0]["hash"], request.form.get("password")):
+            return apology("invalid username and/or password", 403)
+
+        # Remember which user has logged in
+        session["user_id"] = rows[0]["id"]
+
+        # Redirect user to home page
+        return redirect("/")
+
+    # User reached route via GET (as by clicking a link or via redirect)
+    else:
+        return render_template("login.html")
+
+
+@app.route("/logout")
+def logout():
+    """Log user out"""
+
+    # Forget any user_id & return to start
+    session.clear()
+    return redirect("/")
+
+
+@app.route("/register", methods=["GET", "POST"])
+def register():
+    """Register user"""
+
+    if request.method == "GET":
+        return render_template("register.html")
+
+    elif request.method == "POST":
+        # Ensure username was submitted
+        if not request.form.get("username"):
+            return apology("Must provide username", 400)
+
+        # Ensures username is unique
+        count = int(db.execute("SELECT COUNT(username) FROM users")[0]["COUNT(username)"])
+        taken_names = db.execute("SELECT username FROM users")
+        for i in range(count):
+            if request.form.get("username") == taken_names[i]["username"]:
+                return apology("Username taken :(", 400)
+
+        # Ensure password was submitted
+        if not request.form.get("password") or not request.form.get("confirmation"):
+            return apology("Must provide password", 400)
+        if request.form.get("password") != request.form.get("confirmation"):
+            return apology("Passwords must match", 400)
+
+        # Creates account
+        username = request.form.get("username")
+        password = generate_password_hash(request.form.get("password"))
+        db.execute("INSERT INTO users (username, hash) VALUES (?, ?);", username, password)
+        return redirect("/")
+
+    else:
+        return apology("We f**ked up :/", 500)
+
+
+
+#---------- INDEX ----------#
+
 @app.route("/")
 def index():
     return render_template("index.html")
+
+
+
+#---------- STRATEGY ----------#
+
+
+
+#---------- SETTINGS / SETUP ----------#
