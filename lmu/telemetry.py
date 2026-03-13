@@ -1,7 +1,4 @@
-def throttle():
+# Re-export the global state for convenience
+from lmu.telemetry_state import state
 
-def brake():
-
-def clutch():
-
-#etc.
+__all__ = ['state']

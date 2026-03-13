@@ -1,26 +1,32 @@
 #---------- SETUP / CONFIG ----------#
 
 # Import requirements
+import json
 import os
+import time
 from cs50 import SQL
-from flask import Flask, flash, jsonify, redirect, render_template, request, session
+from flask import Flask, Response, flash, jsonify, redirect, render_template, request, session, stream_with_context
 from flask_session import Session
 from werkzeug.security import check_password_hash, generate_password_hash
 from helpers import apology, login_required
 
 from f1.server import UdpListener
-from f1.telemetry_state import state as telemetry_state
+from f1.telemetry_state import state as f1_state
 
-#import lmu/server.py
-#import lmu/telemetry.py
+from lmu.server import TcpListener as LmuTcpListener
+from lmu.telemetry_state import state as lmu_state
 
 
 # Configure application
 app = Flask(__name__)
 
-# Start UDP listener as background daemon thread
+# Start F1 UDP listener as background daemon thread
 _udp_listener = UdpListener()
 _udp_listener.start()
+
+# Start LMU TCP listener as background daemon thread
+_lmu_listener = LmuTcpListener()
+_lmu_listener.start()
 
 # Configure session to use filesystem (instead of signed cookies)
 app.config["SESSION_PERMANENT"] = False
@@ -135,7 +141,36 @@ def index():
 
 @app.route("/api/telemetry")
 def api_telemetry():
-    return jsonify(telemetry_state.get_snapshot())
+    return jsonify(f1_state.get_snapshot())
+
+@app.route("/api/telemetry/stream")
+def api_telemetry_stream():
+    """
+    Server-Sent Events stream for live telemetry.
+    Query param: ?game=f1  (default) | ?game=lmu
+    Pushes a JSON event on every new data frame; keepalive every 500 ms otherwise.
+    """
+    game = request.args.get("game", "f1").lower()
+    src  = lmu_state if game == "lmu" else f1_state
+
+    def generate():
+        last_seen = 0.0
+        while True:
+            updated = src.last_update_time
+            if updated > last_seen:
+                last_seen = updated
+                payload = json.dumps(src.get_snapshot())
+                yield f"data: {payload}\n\n"
+            else:
+                # Keepalive comment so the connection stays open
+                yield ": keepalive\n\n"
+            time.sleep(0.016)   # ~60 Hz check rate → ≤16 ms latency
+
+    return Response(
+        stream_with_context(generate()),
+        content_type="text/event-stream",
+        headers={"X-Accel-Buffering": "no", "Cache-Control": "no-cache"},
+    )
 
 @app.route("/telemetry")
 def telemetry():
@@ -162,4 +197,4 @@ def setup():
 
 
 if __name__ == "__main__":
-    app.run(debug=True, use_reloader=False)
+    app.run(debug=True, use_reloader=False, threaded=True)

@@ -29,13 +29,13 @@ SimStrategist is a tool that displays and analyses live in-game telemetry from v
 
 ### From various CS50 problem sets
 
-    - Login flask route
-    - "login.html"
-    - Logout flask route
-    - Register flask route
-    - "register.html"
-    - "apology.html"
-    - "apology" function
+- Login flask route
+- "login.html"
+- Logout flask route
+- Register flask route
+- "register.html"
+- "apology.html"
+- "apology" function
 
  (CSS / JavaScript added/removed for aesthetic purposes)
 

@@ -5,13 +5,20 @@
 {% block body %}
 <div class="container-fluid py-3 px-4">
 
-    <!-- Connection Banner -->
-    <div class="d-flex align-items-center mb-3 gap-3">
+    <!-- Header: title + game toggle + connection badge -->
+    <div class="d-flex align-items-center mb-3 gap-3 flex-wrap">
         <h4 class="text-white mb-0 fw-bold">Live Telemetry</h4>
+
+        <!-- Game toggle -->
+        <div class="btn-group btn-group-sm" role="group" id="game-toggle">
+            <button type="button" class="btn btn-primary active" data-game="f1">F1</button>
+            <button type="button" class="btn btn-outline-primary" data-game="lmu">Le Mans Ultimate</button>
+        </div>
+
         <span id="conn-badge" class="badge bg-secondary">Connecting...</span>
     </div>
 
-    <!-- Top bar: Position / Lap / Session -->
+    <!-- Top bar: Position / Lap / Session info -->
     <div class="row g-3 mb-3">
         <div class="col-4 col-md-2">
             <div class="dash-card text-center">
@@ -26,9 +33,9 @@
             </div>
         </div>
         <div class="col-4 col-md-2">
-            <div class="dash-card text-center">
-                <div class="telemetry-label">Total Laps</div>
-                <div class="telemetry-value" id="t-total-laps">--</div>
+            <div class="dash-card text-center" id="card-total-laps">
+                <div class="telemetry-label" id="label-extra">Total Laps</div>
+                <div class="telemetry-value" id="t-extra">--</div>
             </div>
         </div>
         <div class="col-6 col-md-3">
@@ -66,15 +73,16 @@
                 </div>
             </div>
         </div>
+        <!-- F1: DRS indicator | LMU: Fuel remaining -->
         <div class="col-6 col-md-2">
-            <div class="dash-card text-center">
-                <div class="telemetry-label">DRS</div>
-                <div class="telemetry-value fs-5" id="t-drs">OFF</div>
+            <div class="dash-card text-center" id="card-drs-fuel">
+                <div class="telemetry-label" id="label-drs-fuel">DRS</div>
+                <div class="telemetry-value fs-5" id="t-drs-fuel">OFF</div>
             </div>
         </div>
     </div>
 
-    <!-- Inputs -->
+    <!-- Pedal Inputs -->
     <div class="row g-3 mb-3">
         <div class="col-6">
             <div class="dash-card">
@@ -128,20 +136,33 @@
             <div class="dash-card h-100">
                 <div class="telemetry-section-title">Tyre Temperatures (°C)</div>
                 <div class="tyre-grid">
-                    <div class="tyre-box" id="tyre-fl"><div class="tyre-label">FL</div><div class="tyre-temp" id="tyre-fl-val">0</div></div>
-                    <div class="tyre-box" id="tyre-fr"><div class="tyre-label">FR</div><div class="tyre-temp" id="tyre-fr-val">0</div></div>
-                    <div class="tyre-box" id="tyre-rl"><div class="tyre-label">RL</div><div class="tyre-temp" id="tyre-rl-val">0</div></div>
-                    <div class="tyre-box" id="tyre-rr"><div class="tyre-label">RR</div><div class="tyre-temp" id="tyre-rr-val">0</div></div>
+                    <div class="tyre-box" id="tyre-fl"><div class="tyre-label">FL</div><div class="tyre-temp" id="tyre-fl-val">--</div></div>
+                    <div class="tyre-box" id="tyre-fr"><div class="tyre-label">FR</div><div class="tyre-temp" id="tyre-fr-val">--</div></div>
+                    <div class="tyre-box" id="tyre-rl"><div class="tyre-label">RL</div><div class="tyre-temp" id="tyre-rl-val">--</div></div>
+                    <div class="tyre-box" id="tyre-rr"><div class="tyre-label">RR</div><div class="tyre-temp" id="tyre-rr-val">--</div></div>
                 </div>
             </div>
         </div>
 
         <div class="col-md-3">
             <div class="dash-card h-100">
+                <!-- F1: single engine temp | LMU: water + oil temp -->
                 <div class="telemetry-section-title">Engine</div>
-                <div class="text-center mt-3">
-                    <div class="telemetry-label">Temp (°C)</div>
-                    <div class="telemetry-value" id="t-engine-temp">0</div>
+                <div id="engine-f1">
+                    <div class="text-center mt-3">
+                        <div class="telemetry-label">Temp (°C)</div>
+                        <div class="telemetry-value" id="t-engine-temp">0</div>
+                    </div>
+                </div>
+                <div id="engine-lmu" style="display:none">
+                    <div class="text-center mt-2">
+                        <div class="telemetry-label">Water (°C)</div>
+                        <div class="telemetry-value" id="t-water-temp">0</div>
+                    </div>
+                    <div class="text-center mt-2">
+                        <div class="telemetry-label">Oil (°C)</div>
+                        <div class="telemetry-value" id="t-oil-temp">0</div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -150,105 +171,191 @@
 </div>
 
 <script>
-const SESSION_TYPES = {
-    0: 'Unknown', 1: 'Practice 1', 2: 'Practice 2', 3: 'Practice 3',
-    4: 'Short Practice', 5: 'Qualifying 1', 6: 'Qualifying 2', 7: 'Qualifying 3',
-    8: 'Short Qualifying', 9: 'One-Shot Qualifying', 10: 'Race', 11: 'Race 2',
-    12: 'Race 3', 13: 'Time Trial'
+// ---------- constants ----------
+const F1_SESSION_TYPES = {
+    0:'Unknown', 1:'Practice 1', 2:'Practice 2', 3:'Practice 3',
+    4:'Short Practice', 5:'Qualifying 1', 6:'Qualifying 2', 7:'Qualifying 3',
+    8:'Short Qualifying', 9:'One-Shot Qualifying', 10:'Race', 11:'Race 2',
+    12:'Race 3', 13:'Time Trial'
 };
 
+// ---------- state ----------
+let activeGame = 'f1';
+let es = null;   // active EventSource
+
+// ---------- formatters ----------
 function fmtMs(ms) {
     if (!ms) return '--:--.---';
-    const totalSec = Math.floor(ms / 1000);
-    const min = Math.floor(totalSec / 60);
-    const sec = totalSec % 60;
+    const min   = Math.floor(ms / 60000);
+    const sec   = Math.floor((ms % 60000) / 1000);
     const millis = ms % 1000;
     return `${min}:${String(sec).padStart(2,'0')}.${String(millis).padStart(3,'0')}`;
 }
 
-function fmtSector(ms) {
-    if (!ms) return '--';
-    return (ms / 1000).toFixed(3) + 's';
+function fmtSec(s) {
+    if (!s) return '--:--.---';
+    const min    = Math.floor(s / 60);
+    const sec    = Math.floor(s % 60);
+    const millis = Math.round((s % 1) * 1000);
+    return `${min}:${String(sec).padStart(2,'0')}.${String(millis).padStart(3,'0')}`;
 }
 
+function fmtSectorMs(ms) { return ms ? (ms / 1000).toFixed(3) + 's' : '--'; }
+function fmtSectorSec(s)  { return s  ? s.toFixed(3) + 's' : '--'; }
+
 function tyreColorClass(temp) {
-    if (temp < 70) return 'tyre-cold';
+    if (!temp) return '';
+    if (temp < 70)  return 'tyre-cold';
     if (temp <= 100) return 'tyre-good';
     if (temp <= 110) return 'tyre-warm';
     return 'tyre-hot';
 }
 
 function gearLabel(g) {
-    if (g === -1) return 'R';
-    if (g === 0) return 'N';
+    if (g === -1 || g === '-1') return 'R';
+    if (g === 0  || g === '0')  return 'N';
     return String(g);
 }
 
-async function poll() {
-    try {
-        const resp = await fetch('/api/telemetry');
-        const data = await resp.json();
-        const t = data.telemetry;
-        const lap = data.lap_data;
-        const sess = data.session;
-        const connected = data.connected;
+// ---------- DOM update ----------
+function render(data) {
+    const t       = data.telemetry;
+    const lap     = data.lap_data;
+    const sess    = data.session;
+    const isF1    = activeGame === 'f1';
 
-        // Connection badge
-        const badge = document.getElementById('conn-badge');
-        badge.textContent = connected ? 'Connected' : 'Disconnected';
-        badge.className = 'badge ' + (connected ? 'bg-success' : 'bg-danger');
+    // Connection badge
+    const badge = document.getElementById('conn-badge');
+    badge.textContent = data.connected ? 'Connected' : 'Disconnected';
+    badge.className   = 'badge ' + (data.connected ? 'bg-success' : 'bg-danger');
 
-        // Top bar
-        document.getElementById('t-position').textContent = lap.car_position || '--';
-        document.getElementById('t-lap').textContent = lap.current_lap || '--';
-        document.getElementById('t-total-laps').textContent = sess.total_laps || '--';
-        document.getElementById('t-session-type').textContent = SESSION_TYPES[sess.session_type] || '--';
+    // Top bar
+    document.getElementById('t-position').textContent = lap.car_position || '--';
+    document.getElementById('t-lap').textContent      = lap.current_lap  || '--';
 
-        // Gauges
-        document.getElementById('t-speed').textContent = t.speed || 0;
-        document.getElementById('t-gear').textContent = gearLabel(t.gear);
-        const rpmPct = Math.min((t.rev_lights_percent || 0), 100);
-        document.getElementById('t-rpm-bar').style.width = rpmPct + '%';
-        document.getElementById('t-rpm-val').textContent = (t.rpm || 0).toLocaleString();
-        const drsEl = document.getElementById('t-drs');
-        drsEl.textContent = t.drs ? 'ON' : 'OFF';
-        drsEl.style.color = t.drs ? '#00ff87' : '#888';
+    if (isF1) {
+        document.getElementById('label-extra').textContent = 'Total Laps';
+        document.getElementById('t-extra').textContent     = sess.total_laps || '--';
+        document.getElementById('t-session-type').textContent =
+            F1_SESSION_TYPES[sess.session_type] ?? '--';
+    } else {
+        document.getElementById('label-extra').textContent = 'Track';
+        document.getElementById('t-extra').textContent     = sess.track_name || '--';
+        document.getElementById('t-session-type').textContent = sess.session_type || '--';
+    }
 
-        // Inputs
-        const throttlePct = Math.round((t.throttle || 0) * 100);
-        const brakePct = Math.round((t.brake || 0) * 100);
-        document.getElementById('t-throttle-bar').style.width = throttlePct + '%';
-        document.getElementById('t-throttle-val').textContent = throttlePct + '%';
-        document.getElementById('t-brake-bar').style.width = brakePct + '%';
-        document.getElementById('t-brake-val').textContent = brakePct + '%';
+    // Speed & Gear
+    document.getElementById('t-speed').textContent = isF1
+        ? (t.speed || 0)
+        : Math.round((t.speed || 0) * 3.6);   // LMU gives m/s
+    document.getElementById('t-gear').textContent = gearLabel(t.gear);
 
-        // Lap times
-        document.getElementById('t-cur-lap').textContent = fmtMs(lap.current_lap_time);
+    // RPM bar — F1 uses rev_lights_percent; LMU we approximate from raw rpm
+    const rpmPct = isF1
+        ? Math.min(t.rev_lights_percent || 0, 100)
+        : Math.min(((t.rpm || 0) / 12000) * 100, 100);
+    document.getElementById('t-rpm-bar').style.width = rpmPct + '%';
+    document.getElementById('t-rpm-val').textContent = (t.rpm || 0).toLocaleString();
+
+    // DRS (F1) / Fuel (LMU)
+    const drsEl = document.getElementById('t-drs-fuel');
+    if (isF1) {
+        drsEl.textContent  = t.drs ? 'ON' : 'OFF';
+        drsEl.style.color  = t.drs ? '#00ff87' : '#888';
+    } else {
+        drsEl.textContent = (t.fuel != null) ? t.fuel.toFixed(1) + ' kg' : '--';
+        drsEl.style.color = '#fff';
+    }
+
+    // Pedal inputs
+    const throttlePct = Math.round((t.throttle || 0) * 100);
+    const brakePct    = Math.round((t.brake    || 0) * 100);
+    document.getElementById('t-throttle-bar').style.width  = throttlePct + '%';
+    document.getElementById('t-throttle-val').textContent  = throttlePct + '%';
+    document.getElementById('t-brake-bar').style.width     = brakePct + '%';
+    document.getElementById('t-brake-val').textContent     = brakePct + '%';
+
+    // Lap times
+    if (isF1) {
+        document.getElementById('t-cur-lap').textContent  = fmtMs(lap.current_lap_time);
         document.getElementById('t-last-lap').textContent = fmtMs(lap.last_lap_time);
         document.getElementById('t-best-lap').textContent = fmtMs(lap.best_lap_time);
-        document.getElementById('t-s1').textContent = fmtSector(lap.sector1_time);
-        document.getElementById('t-s2').textContent = fmtSector(lap.sector2_time);
+        document.getElementById('t-s1').textContent       = fmtSectorMs(lap.sector1_time);
+        document.getElementById('t-s2').textContent       = fmtSectorMs(lap.sector2_time);
+    } else {
+        document.getElementById('t-cur-lap').textContent  = fmtSec(lap.current_lap_time);
+        document.getElementById('t-last-lap').textContent = fmtSec(lap.last_lap_time);
+        document.getElementById('t-best-lap').textContent = fmtSec(lap.best_lap_time);
+        document.getElementById('t-s1').textContent       = fmtSectorSec(lap.sector1_time);
+        document.getElementById('t-s2').textContent       = fmtSectorSec(lap.sector2_time);
+    }
 
-        // Tyres
-        const tyres = t.tyres_surface_temp || [0,0,0,0];
-        const labels = ['fl','fr','rl','rr'];
-        tyres.forEach((temp, i) => {
-            const box = document.getElementById('tyre-' + labels[i]);
-            const val = document.getElementById('tyre-' + labels[i] + '-val');
-            box.className = 'tyre-box ' + tyreColorClass(temp);
-            val.textContent = temp;
-        });
+    // Tyre temps — F1 has them; LMU plugin may not provide them
+    const tyreSrc  = isF1 ? (t.tyres_surface_temp || [0,0,0,0]) : null;
+    const tyreKeys = ['fl','fr','rl','rr'];
+    tyreKeys.forEach((k, i) => {
+        const box  = document.getElementById('tyre-' + k);
+        const val  = document.getElementById('tyre-' + k + '-val');
+        const temp = tyreSrc ? tyreSrc[i] : null;
+        box.className    = 'tyre-box ' + (temp != null ? tyreColorClass(temp) : '');
+        val.textContent  = temp != null ? temp : '--';
+    });
 
-        // Engine
+    // Engine panel
+    if (isF1) {
+        document.getElementById('engine-f1').style.display = '';
+        document.getElementById('engine-lmu').style.display = 'none';
         document.getElementById('t-engine-temp').textContent = t.engine_temp || 0;
-
-    } catch(e) {
-        document.getElementById('conn-badge').textContent = 'Error';
-        document.getElementById('conn-badge').className = 'badge bg-danger';
+    } else {
+        document.getElementById('engine-f1').style.display = 'none';
+        document.getElementById('engine-lmu').style.display = '';
+        document.getElementById('t-water-temp').textContent =
+            t.engine_water_temp != null ? Math.round(t.engine_water_temp) : '--';
+        document.getElementById('t-oil-temp').textContent =
+            t.engine_oil_temp   != null ? Math.round(t.engine_oil_temp)   : '--';
     }
 }
 
-poll();
-setInterval(poll, 500);
+// ---------- SSE connection ----------
+function connect(game) {
+    if (es) { es.close(); es = null; }
+
+    document.getElementById('conn-badge').textContent  = 'Connecting...';
+    document.getElementById('conn-badge').className    = 'badge bg-secondary';
+
+    es = new EventSource(`/api/telemetry/stream?game=${game}`);
+
+    es.onmessage = (e) => {
+        try { render(JSON.parse(e.data)); } catch (_) {}
+    };
+
+    es.onerror = () => {
+        document.getElementById('conn-badge').textContent = 'Disconnected';
+        document.getElementById('conn-badge').className   = 'badge bg-danger';
+    };
+}
+
+// ---------- toggle ----------
+document.querySelectorAll('#game-toggle button').forEach(btn => {
+    btn.addEventListener('click', () => {
+        document.querySelectorAll('#game-toggle button').forEach(b => {
+            b.classList.replace('btn-primary', 'btn-outline-primary');
+            b.classList.remove('active');
+        });
+        btn.classList.replace('btn-outline-primary', 'btn-primary');
+        btn.classList.add('active');
+
+        activeGame = btn.dataset.game;
+
+        // Swap DRS/Fuel label
+        document.getElementById('label-drs-fuel').textContent =
+            activeGame === 'f1' ? 'DRS' : 'Fuel';
+
+        connect(activeGame);
+    });
+});
+
+// ---------- boot ----------
+connect('f1');
 </script>
 {% endblock %}
