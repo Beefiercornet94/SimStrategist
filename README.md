@@ -38,3 +38,7 @@ SimStrategist is a tool that displays and analyses live in-game telemetry from v
     - "apology" function
 
  (CSS / JavaScript added/removed for aesthetic purposes)
+
+## About me
+
+This is my first GitHub publication, so apologies for any badly-written code and/or unhelpful comments!
