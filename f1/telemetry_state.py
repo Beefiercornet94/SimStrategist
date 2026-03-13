@@ -12,7 +12,7 @@ import time
 import pandas as pd
 import numpy as np
 from typing import Dict, Any, Optional
-from config import Config
+from f1.config import Config
 
 
 class TelemetryState:

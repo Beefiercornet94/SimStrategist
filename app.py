@@ -3,14 +3,13 @@
 # Import requirements
 import os
 from cs50 import SQL
-from flask import Flask, flash, redirect, render_template, request, session
+from flask import Flask, flash, jsonify, redirect, render_template, request, session
 from flask_session import Session
 from werkzeug.security import check_password_hash, generate_password_hash
 from helpers import apology, login_required
 
-#import f1/config.py
-#import f1/server.py
-#import f1/telemetry_state.py
+from f1.server import UdpListener
+from f1.telemetry_state import state as telemetry_state
 
 #import lmu/server.py
 #import lmu/telemetry.py
@@ -18,6 +17,10 @@ from helpers import apology, login_required
 
 # Configure application
 app = Flask(__name__)
+
+# Start UDP listener as background daemon thread
+_udp_listener = UdpListener()
+_udp_listener.start()
 
 # Configure session to use filesystem (instead of signed cookies)
 app.config["SESSION_PERMANENT"] = False
@@ -128,8 +131,19 @@ def index():
 
 
 
-#---------- STRATEGY ----------#
+#---------- TELEMETRY / STRATEGY ----------#
 
+@app.route("/api/telemetry")
+def api_telemetry():
+    return jsonify(telemetry_state.get_snapshot())
+
+@app.route("/telemetry")
+def telemetry():
+    return render_template("telemetry.html")
+
+@app.route("/strategy")
+def strategy():
+    return render_template("strategy.html")
 
 
 #---------- SETTINGS / SETUP ----------#
@@ -139,9 +153,13 @@ def index():
 def setup():
     if request.method == "GET":
         return render_template("setup.html")
-    
+
     elif request.method == "POST":
         return redirect("/")
-    
+
     else:
         return apology("We f**ked up :/", 500)
+
+
+if __name__ == "__main__":
+    app.run(debug=True, use_reloader=False)

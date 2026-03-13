@@ -1,9 +1,31 @@
 {% extends "layout.html" %}
 
-{% block title %}
-    Home
-{% endblock %}
+{% block title %}Home{% endblock %}
 
 {% block body %}
-    <p>test</p>
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h1 class="display-4 fw-bold text-white">SimStrategist</h1>
+        <p class="lead text-secondary">Live telemetry monitoring and race strategy for your simulator</p>
+    </div>
+
+    <div class="row g-4 justify-content-center">
+        <div class="col-md-5">
+            <div class="dash-card h-100 text-center p-4">
+                <div class="mb-3" style="font-size:3rem;">&#128267;</div>
+                <h3 class="text-white fw-bold">Live Telemetry</h3>
+                <p class="text-secondary">Real-time speed, gear, RPM, tyre temperatures, and inputs streamed directly from your F1 game.</p>
+                <a href="/telemetry" class="btn btn-outline-light mt-2">Open Dashboard</a>
+            </div>
+        </div>
+        <div class="col-md-5">
+            <div class="dash-card h-100 text-center p-4">
+                <div class="mb-3" style="font-size:3rem;">&#129504;</div>
+                <h3 class="text-white fw-bold">Strategy Co-Pilot</h3>
+                <p class="text-secondary">Rule-based live recommendations on tyres, lap times, penalties, weather, and pit strategy.</p>
+                <a href="/strategy" class="btn btn-outline-light mt-2">Open Strategy</a>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}

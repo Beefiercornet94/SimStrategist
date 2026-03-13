@@ -130,6 +130,117 @@ body
 
 
 
+/* DASHBOARD */
+
+body {
+    background-color: #0d0d0d;
+    color: #fff;
+}
+
+.dash-card {
+    background-color: #141414;
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 10px;
+    padding: 16px;
+}
+
+.telemetry-value {
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 2.4rem;
+    font-weight: 700;
+    color: #00d2be;
+    line-height: 1.1;
+}
+
+.telemetry-label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #888;
+    margin-bottom: 4px;
+}
+
+.telemetry-section-title {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #e10600;
+    font-weight: 700;
+    border-bottom: 1px solid rgba(225,6,0,0.3);
+    padding-bottom: 6px;
+    margin-bottom: 10px;
+}
+
+/* Progress bars */
+.bar-track {
+    height: 14px;
+    background: #2a2a2a;
+    border-radius: 7px;
+    overflow: hidden;
+}
+
+.bar-fill {
+    height: 100%;
+    border-radius: 7px;
+    transition: width 0.15s ease;
+}
+
+.bar-throttle { background: #00ff87; }
+.bar-brake    { background: #ff4757; }
+.bar-rpm      { background: #00d2be; }
+
+/* Tyre grid */
+.tyre-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 8px;
+}
+
+.tyre-box {
+    border-radius: 8px;
+    padding: 10px;
+    text-align: center;
+    border: 1px solid rgba(255,255,255,0.1);
+    transition: background-color 0.3s;
+}
+
+.tyre-label { font-size: 0.7rem; text-transform: uppercase; color: #888; }
+.tyre-temp  { font-size: 1.6rem; font-weight: 700; color: #fff; font-family: 'Courier New', monospace; }
+
+.tyre-cold { background-color: #1a3a5c; }
+.tyre-good { background-color: #1a3d2b; }
+.tyre-warm { background-color: #3d3300; }
+.tyre-hot  { background-color: #4a1010; }
+
+/* Strategy cards */
+.strategy-card {
+    background: #141414;
+    border-radius: 8px;
+    padding: 14px 18px;
+    border-left: 4px solid #444;
+    display: flex;
+    align-items: center;
+}
+
+.strategy-card.severity-alert   { border-left-color: #ff4757; }
+.strategy-card.severity-warning { border-left-color: #ffa502; }
+.strategy-card.severity-info    { border-left-color: #00d2be; }
+
+.severity-badge {
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    padding: 3px 8px;
+    border-radius: 4px;
+    white-space: nowrap;
+}
+
+.badge-info    { background: #00d2be; color: #000; }
+.badge-warning { background: #ffa502; color: #000; }
+.badge-alert   { background: #ff4757; color: #fff; }
+
+
 /* OTHER COLOURS */
 .gold
 {

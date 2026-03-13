@@ -9,7 +9,7 @@ import socket
 import struct
 import threading
 import logging
-from telemetry_state import state
+from f1.telemetry_state import state
 
 # Setup logging
 logging.basicConfig(level=logging.INFO)
@@ -278,5 +278,6 @@ class UdpListener(threading.Thread):
     def stop(self):
         self.running = False
 
-Listener = UdpListener()
-Listener.run()
+if __name__ == '__main__':
+    Listener = UdpListener()
+    Listener.run()
