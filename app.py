@@ -5,6 +5,7 @@ import os
 from cs50 import SQL
 from flask import Flask, flash, redirect, render_template, request, session
 from flask_session import Session
+from werkzeug.security import check_password_hash, generate_password_hash
 from helpers import apology, login_required
 
 #import f1/config.py
@@ -67,7 +68,7 @@ def login():
         session["user_id"] = rows[0]["id"]
 
         # Redirect user to home page
-        return redirect("/")
+        return redirect("/setup")
 
     # User reached route via GET (as by clicking a link or via redirect)
     else:
@@ -132,3 +133,15 @@ def index():
 
 
 #---------- SETTINGS / SETUP ----------#
+
+@app.route("/setup", methods=["GET", "POST"])
+@login_required
+def setup():
+    if request.method == "GET":
+        return render_template("setup.html")
+    
+    elif request.method == "POST":
+        return redirect("/")
+    
+    else:
+        return apology("We f**ked up :/", 500)

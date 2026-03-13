@@ -1,0 +1,21 @@
+-- database: ../strategist.db
+
+-- Create games table
+CREATE TABLE games (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    system TEXT NOT NULL,
+    version TEXT NOT NULL
+);
+-- Add suitable games
+INSERT INTO games (name, system, version) VALUES
+    ('F1-2022', 'Xbox', '1.0'),
+    ('F1-2022', 'PlayStation', '1.0'),
+    ('F1-2022', 'PC', '1.0'),
+    ('F1-2023', 'Xbox', '1.0'),
+    ('F1-2023', 'PlayStation', '1.0'),
+    ('F1-2023', 'PC', '1.0'),
+    ('F1-2024', 'Xbox', '1.0'),
+    ('F1-2024', 'PlayStation', '1.0'),
+    ('F1-2024', 'PC', '1.0'),
+    ('Le Mans Ultimate', 'PC', '1.0');

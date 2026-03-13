@@ -1,0 +1,16 @@
+-- database: ../strategist.db
+
+-- Create users table
+CREATE TABLE users (
+        id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+        username TEXT NOT NULL UNIQUE,
+        email TEXT NOT NULL UNIQUE,
+        password TEXT NOT NULL,
+        date_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+    INSERT INTO users (username, email, password) VALUES
+    ('luke1', 'luke1@example.com', '123'),
+    ('luke2', 'luke2@example.com', '123'),
+    ('luke3', 'luke3@example.com', '123'),
+    ('luke4', 'luke4@example.com', '123'),
+    ('luke5', 'luke5@example.com', '123');

@@ -1,0 +1,17 @@
+-- database: ../strategist.db
+
+-- Create sessions table
+CREATE TABLE sessions (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    game INTEGER NOT NULL,
+    session TEXT NOT NULL,
+    length TEXT NOT NULL,
+    result TEXT NOT NULL,
+    date_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id)
+    FOREIGN KEY (game) REFERENCES games(id)
+);
+-- Add test sessions
+INSERT INTO sessions (user_id, game, session, length, result) VALUES
+    (1, 1, 'Test', '1 hour', '1/1');
