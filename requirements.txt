@@ -1,0 +1,6 @@
+os
+flask
+flask_session
+cs50
+requests
+functools

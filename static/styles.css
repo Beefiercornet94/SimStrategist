@@ -1,0 +1,145 @@
+/* STRUCTURE */
+/* Main text */
+body
+{
+    background-image: "images/red-background.jpg";
+    font-weight: 400;
+    line-height: 1.5;
+    margin: 0;
+    text-align: center;
+}
+.headings
+{
+    text-align: center;
+    font-size: 36pt;
+    color: black;
+}
+.paren
+{
+    text-align: left;
+    font-size: 18pt;
+    color: black;
+    text-decoration: underline;
+    display: flex;
+    text-align: center;
+    justify-content: center;
+    align-items: center;
+}
+.hotbar
+{
+    font-size: 20pt;
+    display: flex;
+    text-align: center;
+    justify-content: center;
+    align-items: center;
+    height: 50px;
+    border: none;
+    color: black;
+    padding: 15px 32px;
+    text-align: center;
+    align-items: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 20px;
+    cursor: pointer;
+}
+.sub
+{
+    text-align: center;
+    font-size: 20pt;
+    color: black;
+    text-decoration: underline;
+}
+.content
+{
+    font-size: 18t;
+    display: flex;
+    text-align: center;
+    justify-content: center;
+    align-items: center;
+    height: 50pt;
+}
+.footer
+{
+    font-size: 10pt;
+    /* color: #3a4ac7; */
+    display: flex;
+    text-align: center;
+    height: 1000px;
+}
+.name
+{
+    border: 1px solid transparent;
+    border-radius: 0.25rem;
+    font-size: 0.95rem;
+    font-weight: 400;
+    line-height: 1.5;
+    padding: 0.375rem 0.75rem;
+    text-align: center;
+    transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+    vertical-align: middle;
+}
+/* Tables */
+
+/* TEAMS */
+/* F1 */
+.ferrari_f1
+{
+
+    background-color: #E80020;
+}
+.redbull_f1
+{
+    background-color: #3671C6;
+}
+.mercedes_f1
+{
+    background-color: #27F4D2;
+}
+.mclaren_f1
+{
+    background-color: #FF8000;
+}
+.astonmartin_f1
+{
+    background-color: #229971;
+}
+.alpine_f1
+{
+    background-color: #0093CC;
+}
+.haas_f1
+{
+    background-color: #B6BABD;
+}
+.racingbulls_f1
+{
+    background-color: #6692FF;
+}
+.williams_f1
+{
+    background-color: #64C4FF;
+}
+.kick_sauber_f1
+{
+    background-color: #52E252;
+}
+/* HY */
+/* LMP2 */
+/* LMGT3 */
+
+
+
+/* OTHER COLOURS */
+.gold
+{
+    background-color: #FFD700;
+}
+.silver
+{
+    background-color: #C0C0C0;
+}
+.bronze
+{
+    background-color: #CD7F32;
+}
