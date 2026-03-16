@@ -182,5 +182,11 @@ document.querySelectorAll('#game-toggle button').forEach(btn => {
     });
 });
 
+// ---------- help modal: sync tab to active game ----------
+document.getElementById('connect-modal').addEventListener('show.bs.modal', () => {
+    const tabId = activeGame === 'lmu' ? 'tab-lmu' : 'tab-f1';
+    bootstrap.Tab.getOrCreateInstance(document.getElementById(tabId)).show();
+});
+
 // ---------- boot ----------
 connect('f1');

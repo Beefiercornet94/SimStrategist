@@ -16,6 +16,80 @@
         </div>
 
         <span id="conn-badge" class="badge bg-secondary">Connecting...</span>
+
+        <button class="btn btn-sm btn-outline-secondary ms-auto" id="help-btn"
+                data-bs-toggle="modal" data-bs-target="#connect-modal"
+                title="How to connect">
+            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="currentColor" viewBox="0 0 16 16" style="vertical-align:-2px">
+                <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                <path d="M5.255 5.786a.237.237 0 0 0 .241.247h.825c.138 0 .248-.113.266-.25.09-.656.54-1.134 1.342-1.134.686 0 1.314.343 1.314 1.168 0 .635-.374.927-.965 1.371-.673.489-1.206 1.06-1.168 1.987l.003.217a.25.25 0 0 0 .25.246h.811a.25.25 0 0 0 .25-.25v-.105c0-.718.273-.927 1.01-1.486.609-.463 1.244-.977 1.244-2.056 0-1.511-1.276-2.241-2.673-2.241-1.267 0-2.655.59-2.75 2.286zm1.557 5.763c0 .533.425.927 1.01.927.609 0 1.028-.394 1.028-.927 0-.552-.42-.94-1.029-.94-.584 0-1.009.388-1.009.94z"/>
+            </svg>
+            How to Connect
+        </button>
+    </div>
+
+    <!-- Connection instructions modal -->
+    <div class="modal fade" id="connect-modal" tabindex="-1" aria-labelledby="connect-modal-label" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content bg-dark text-white border-secondary">
+                <div class="modal-header border-secondary">
+                    <h5 class="modal-title fw-bold" id="connect-modal-label">How to Connect Your Game</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Tabs -->
+                    <ul class="nav nav-tabs border-secondary mb-3" id="connect-tabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="tab-f1" data-bs-toggle="tab"
+                                    data-bs-target="#pane-f1" type="button" role="tab">F1 (2022 / 2023 / 2024)</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="tab-lmu" data-bs-toggle="tab"
+                                    data-bs-target="#pane-lmu" type="button" role="tab">Le Mans Ultimate</button>
+                        </li>
+                    </ul>
+
+                    <div class="tab-content">
+                        <!-- F1 pane -->
+                        <div class="tab-pane fade show active" id="pane-f1" role="tabpanel">
+                            <p class="text-secondary mb-3">F1 games broadcast telemetry over UDP. Follow these steps:</p>
+                            <ol class="ps-3" style="line-height:2">
+                                <li>In the F1 game, go to <strong>Settings → Telemetry Settings</strong>.</li>
+                                <li>Set <strong>UDP Telemetry</strong> to <code>On</code>.</li>
+                                <li>Set <strong>UDP Broadcast Mode</strong> to <code>Off</code>.</li>
+                                <li>Set <strong>UDP IP Address</strong> to the IP of the machine running SimStrategist (use <code>127.0.0.1</code> if on the same PC).</li>
+                                <li>Set <strong>UDP Port</strong> to <code>20777</code>.</li>
+                                <li>Set <strong>UDP Send Rate</strong> to <code>20Hz</code> (recommended).</li>
+                                <li>Set <strong>UDP Format</strong> to match your game year (e.g. <code>2023</code>).</li>
+                                <li>On the SimStrategist machine, run the telemetry listener:<br>
+                                    <code class="d-block mt-1 p-2 rounded" style="background:#1a1a1a">python3 f1/server.py</code>
+                                </li>
+                            </ol>
+                            <div class="alert alert-secondary border-secondary mt-3 mb-0 py-2">
+                                <small>The listener receives data on <strong>UDP port 20777</strong>. Make sure your firewall allows this port if the game runs on a different machine.</small>
+                            </div>
+                        </div>
+
+                        <!-- LMU pane -->
+                        <div class="tab-pane fade" id="pane-lmu" role="tabpanel">
+                            <p class="text-secondary mb-3">Le Mans Ultimate uses the <em>JSON Telemetry Plugin</em>. Follow these steps:</p>
+                            <ol class="ps-3" style="line-height:2">
+                                <li>Download and install the <strong>Ultimate Telemetry Socket – JSON Telemetry Plugin</strong> from the Le Mans Ultimate community forums.</li>
+                                <li>Place the plugin DLL in your LMU <code>Plugins</code> folder.</li>
+                                <li>In the plugin configuration file, set the output host to <code>127.0.0.1</code> and port to <code>5100</code>.</li>
+                                <li>Start Le Mans Ultimate — the plugin will begin sending telemetry automatically.</li>
+                                <li>On the SimStrategist machine, run the LMU listener:<br>
+                                    <code class="d-block mt-1 p-2 rounded" style="background:#1a1a1a">python3 lmu/server.py</code>
+                                </li>
+                            </ol>
+                            <div class="alert alert-secondary border-secondary mt-3 mb-0 py-2">
+                                <small>The listener accepts connections on <strong>TCP port 5100</strong> by default. To use UDP instead, run <code>python3 lmu/server.py --udp</code>. To change the port, add <code>--port &lt;number&gt;</code>.</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Top bar: Position / Lap / Session info -->

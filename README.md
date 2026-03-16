@@ -11,17 +11,48 @@ SimStrategist is a tool that displays and analyses live in-game telemetry from v
 
 ## Usage
 
-### Activation (F1)
+### Connecting F1 (2022 / 2023 / 2024)
 
-### Installation (LMU)
+1. In the F1 game, go to **Settings → Telemetry Settings**.
+2. Set **UDP Telemetry** to `On`.
+3. Set **UDP Broadcast Mode** to `Off`.
+4. Set **UDP IP Address** to the IP of the machine running SimStrategist (use `127.0.0.1` if on the same PC).
+5. Set **UDP Port** to `20777`.
+6. Set **UDP Send Rate** to `20Hz` (recommended).
+7. Set **UDP Format** to match your game year (e.g. `2023`).
+8. Start the telemetry listener:
 
-### UDP Listener Startup
+```bash
+python3 f1/server.py
+```
 
-    cd f1
-This will change directory to the "F1" folder
+> The listener receives data on **UDP port 20777**. Make sure your firewall allows this port if the game runs on a different machine.
 
-    python3 server.py
-This will start a UDP listener on port 20777
+---
+
+### Connecting Le Mans Ultimate
+
+1. Download and install the **Ultimate Telemetry Socket – JSON Telemetry Plugin** from the Le Mans Ultimate community forums.
+2. Place the plugin DLL in your LMU `Plugins` folder.
+3. In the plugin configuration file, set the output host to `127.0.0.1` and port to `5100`.
+4. Start Le Mans Ultimate — the plugin will begin sending telemetry automatically.
+5. Start the telemetry listener:
+
+```bash
+python3 lmu/server.py
+```
+
+> The listener accepts connections on **TCP port 5100** by default. To use UDP instead, run `python3 lmu/server.py --udp`. To change the port, add `--port <number>`.
+
+---
+
+### Starting the Web App
+
+```bash
+python3 app.py
+```
+
+Then open your browser and navigate to `http://127.0.0.1:5000`.
 
 ## External Code Used
 
