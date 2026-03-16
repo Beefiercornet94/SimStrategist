@@ -3,13 +3,12 @@
 {% block title %}Live Telemetry{% endblock %}
 
 {% block body %}
-<div class="container-fluid py-3 px-4">
+<div class="container-fluid py-3 px-3">
 
-    <!-- Header: title + game toggle + connection badge -->
-    <div class="d-flex align-items-center mb-3 gap-3 flex-wrap">
+    <!-- Header bar -->
+    <div class="d-flex align-items-center mb-3 gap-3 flex-wrap justify-content-center">
         <h4 class="text-white mb-0 fw-bold">Live Telemetry</h4>
 
-        <!-- Game toggle -->
         <div class="btn-group btn-group-sm" role="group" id="game-toggle">
             <button type="button" class="btn btn-primary active" data-game="f1">F1</button>
             <button type="button" class="btn btn-outline-primary" data-game="lmu">Le Mans Ultimate</button>
@@ -17,7 +16,7 @@
 
         <span id="conn-badge" class="badge bg-secondary">Connecting...</span>
 
-        <button class="btn btn-sm btn-outline-secondary ms-auto" id="help-btn"
+        <button class="btn btn-sm btn-outline-secondary" id="help-btn"
                 data-bs-toggle="modal" data-bs-target="#connect-modal"
                 title="How to connect">
             <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="currentColor" viewBox="0 0 16 16" style="vertical-align:-2px">
@@ -37,7 +36,6 @@
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <!-- Tabs -->
                     <ul class="nav nav-tabs border-secondary mb-3" id="connect-tabs" role="tablist">
                         <li class="nav-item" role="presentation">
                             <button class="nav-link active" id="tab-f1" data-bs-toggle="tab"
@@ -50,7 +48,6 @@
                     </ul>
 
                     <div class="tab-content">
-                        <!-- F1 pane -->
                         <div class="tab-pane fade show active" id="pane-f1" role="tabpanel">
                             <p class="text-secondary mb-3">F1 games broadcast telemetry over UDP. Follow these steps:</p>
                             <ol class="ps-3" style="line-height:2">
@@ -70,7 +67,6 @@
                             </div>
                         </div>
 
-                        <!-- LMU pane -->
                         <div class="tab-pane fade" id="pane-lmu" role="tabpanel">
                             <p class="text-secondary mb-3">Le Mans Ultimate uses the <em>JSON Telemetry Plugin</em>. Follow these steps:</p>
                             <ol class="ps-3" style="line-height:2">
@@ -92,156 +88,147 @@
         </div>
     </div>
 
-    <!-- Top bar: Position / Lap / Session info -->
-    <div class="row g-3 mb-3">
-        <div class="col-4 col-md-2">
-            <div class="dash-card text-center">
-                <div class="telemetry-label">Position</div>
-                <div class="telemetry-value" id="t-position">--</div>
-            </div>
-        </div>
-        <div class="col-4 col-md-2">
-            <div class="dash-card text-center">
-                <div class="telemetry-label">Lap</div>
-                <div class="telemetry-value" id="t-lap">--</div>
-            </div>
-        </div>
-        <div class="col-4 col-md-2">
-            <div class="dash-card text-center" id="card-total-laps">
-                <div class="telemetry-label" id="label-extra">Total Laps</div>
-                <div class="telemetry-value" id="t-extra">--</div>
-            </div>
-        </div>
-        <div class="col-6 col-md-3">
-            <div class="dash-card text-center">
-                <div class="telemetry-label">Session</div>
-                <div class="telemetry-value fs-5" id="t-session-type">--</div>
-            </div>
-        </div>
-    </div>
+    <!-- ========== STEERING WHEEL PANEL ========== -->
+    <div class="wheel-panel mx-auto">
 
-    <!-- Main Gauges -->
-    <div class="row g-3 mb-3">
-        <div class="col-6 col-md-2">
-            <div class="dash-card text-center">
-                <div class="telemetry-label">Speed (kph)</div>
-                <div class="telemetry-value" id="t-speed">0</div>
+        <!-- RPM shift-light bar (top of wheel) -->
+        <div class="dash-card mb-2 py-2 px-3">
+            <div class="d-flex align-items-center gap-2">
+                <span class="telemetry-label mb-0" style="white-space:nowrap">RPM</span>
+                <div class="flex-grow-1">
+                    <div class="bar-track">
+                        <div class="bar-fill bar-rpm" id="t-rpm-bar" style="width:0%"></div>
+                    </div>
+                </div>
+                <small class="text-secondary" id="t-rpm-val">0</small>
             </div>
         </div>
-        <div class="col-6 col-md-2">
-            <div class="dash-card text-center">
-                <div class="telemetry-label">Gear</div>
-                <div class="telemetry-value" id="t-gear">N</div>
+
+        <!-- Main wheel row: Left info | Center gear+speed | Right status -->
+        <div class="row g-2 mb-2">
+
+            <!-- Left column: race info -->
+            <div class="col-3 d-flex flex-column gap-2">
+                <div class="dash-card text-center flex-fill">
+                    <div class="telemetry-label">Position</div>
+                    <div class="telemetry-value" id="t-position">--</div>
+                </div>
+                <div class="dash-card text-center flex-fill">
+                    <div class="telemetry-label">Lap</div>
+                    <div class="telemetry-value" id="t-lap">--</div>
+                </div>
+                <div class="dash-card text-center flex-fill">
+                    <div class="telemetry-label" id="label-extra">Total Laps</div>
+                    <div class="telemetry-value fs-4" id="t-extra">--</div>
+                </div>
+                <div class="dash-card text-center flex-fill">
+                    <div class="telemetry-label">Session</div>
+                    <div class="telemetry-value fs-5" id="t-session-type">--</div>
+                </div>
             </div>
-        </div>
-        <div class="col-12 col-md-4">
-            <div class="dash-card">
-                <div class="telemetry-label">RPM</div>
-                <div class="d-flex align-items-center gap-2 mt-1">
-                    <div class="flex-grow-1">
-                        <div class="bar-track">
-                            <div class="bar-fill bar-rpm" id="t-rpm-bar" style="width:0%"></div>
+
+            <!-- Center column: gear (huge) + speed + pedals -->
+            <div class="col-6">
+                <div class="dash-card wheel-center h-100 d-flex flex-column justify-content-center align-items-center text-center gap-1">
+                    <div class="telemetry-label">Gear</div>
+                    <div class="gear-display" id="t-gear">N</div>
+
+                    <div class="telemetry-label mt-1">Speed (kph)</div>
+                    <div class="speed-display" id="t-speed">0</div>
+
+                    <!-- Pedal inputs -->
+                    <div class="w-100 mt-3 px-2">
+                        <div class="row g-2">
+                            <div class="col-6">
+                                <div class="telemetry-label">Throttle</div>
+                                <div class="bar-track mt-1">
+                                    <div class="bar-fill bar-throttle" id="t-throttle-bar" style="width:0%"></div>
+                                </div>
+                                <small class="text-secondary" id="t-throttle-val">0%</small>
+                            </div>
+                            <div class="col-6">
+                                <div class="telemetry-label">Brake</div>
+                                <div class="bar-track mt-1">
+                                    <div class="bar-fill bar-brake" id="t-brake-bar" style="width:0%"></div>
+                                </div>
+                                <small class="text-secondary" id="t-brake-val">0%</small>
+                            </div>
                         </div>
                     </div>
-                    <small class="text-secondary" id="t-rpm-val">0</small>
                 </div>
             </div>
-        </div>
-        <!-- F1: DRS indicator | LMU: Fuel remaining -->
-        <div class="col-6 col-md-2">
-            <div class="dash-card text-center" id="card-drs-fuel">
-                <div class="telemetry-label" id="label-drs-fuel">DRS</div>
-                <div class="telemetry-value fs-5" id="t-drs-fuel">OFF</div>
-            </div>
-        </div>
-    </div>
 
-    <!-- Pedal Inputs -->
-    <div class="row g-3 mb-3">
-        <div class="col-6">
-            <div class="dash-card">
-                <div class="telemetry-label">Throttle</div>
-                <div class="bar-track mt-1">
-                    <div class="bar-fill bar-throttle" id="t-throttle-bar" style="width:0%"></div>
+            <!-- Right column: DRS/fuel + engine -->
+            <div class="col-3 d-flex flex-column gap-2">
+                <div class="dash-card text-center flex-fill" id="card-drs-fuel">
+                    <div class="telemetry-label" id="label-drs-fuel">DRS</div>
+                    <div class="telemetry-value fs-4" id="t-drs-fuel">OFF</div>
                 </div>
-                <small class="text-secondary" id="t-throttle-val">0%</small>
-            </div>
-        </div>
-        <div class="col-6">
-            <div class="dash-card">
-                <div class="telemetry-label">Brake</div>
-                <div class="bar-track mt-1">
-                    <div class="bar-fill bar-brake" id="t-brake-bar" style="width:0%"></div>
-                </div>
-                <small class="text-secondary" id="t-brake-val">0%</small>
-            </div>
-        </div>
-    </div>
 
-    <!-- Lap Times + Tyres + Engine -->
-    <div class="row g-3">
-        <div class="col-md-4">
-            <div class="dash-card h-100">
-                <div class="telemetry-section-title">Lap Times</div>
-                <div class="d-flex justify-content-between py-1 border-bottom border-secondary">
-                    <span class="text-secondary">Current</span>
-                    <span class="text-white fw-bold" id="t-cur-lap">--:--.---</span>
-                </div>
-                <div class="d-flex justify-content-between py-1 border-bottom border-secondary">
-                    <span class="text-secondary">Last</span>
-                    <span class="text-white" id="t-last-lap">--:--.---</span>
-                </div>
-                <div class="d-flex justify-content-between py-1 border-bottom border-secondary">
-                    <span class="text-secondary">Best</span>
-                    <span class="text-white" id="t-best-lap">--:--.---</span>
-                </div>
-                <div class="d-flex justify-content-between py-1 border-bottom border-secondary">
-                    <span class="text-secondary">Sector 1</span>
-                    <span class="text-white" id="t-s1">--</span>
-                </div>
-                <div class="d-flex justify-content-between py-1">
-                    <span class="text-secondary">Sector 2</span>
-                    <span class="text-white" id="t-s2">--</span>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-5">
-            <div class="dash-card h-100">
-                <div class="telemetry-section-title">Tyre Temperatures (°C)</div>
-                <div class="tyre-grid">
-                    <div class="tyre-box" id="tyre-fl"><div class="tyre-label">FL</div><div class="tyre-temp" id="tyre-fl-val">--</div></div>
-                    <div class="tyre-box" id="tyre-fr"><div class="tyre-label">FR</div><div class="tyre-temp" id="tyre-fr-val">--</div></div>
-                    <div class="tyre-box" id="tyre-rl"><div class="tyre-label">RL</div><div class="tyre-temp" id="tyre-rl-val">--</div></div>
-                    <div class="tyre-box" id="tyre-rr"><div class="tyre-label">RR</div><div class="tyre-temp" id="tyre-rr-val">--</div></div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-3">
-            <div class="dash-card h-100">
-                <!-- F1: single engine temp | LMU: water + oil temp -->
-                <div class="telemetry-section-title">Engine</div>
-                <div id="engine-f1">
-                    <div class="text-center mt-3">
+                <div class="dash-card flex-fill" id="engine-f1">
+                    <div class="telemetry-section-title">Engine</div>
+                    <div class="text-center">
                         <div class="telemetry-label">Temp (°C)</div>
                         <div class="telemetry-value" id="t-engine-temp">0</div>
                     </div>
                 </div>
-                <div id="engine-lmu" style="display:none">
-                    <div class="text-center mt-2">
+
+                <div class="dash-card flex-fill" id="engine-lmu" style="display:none">
+                    <div class="telemetry-section-title">Engine</div>
+                    <div class="text-center mb-2">
                         <div class="telemetry-label">Water (°C)</div>
                         <div class="telemetry-value" id="t-water-temp">0</div>
                     </div>
-                    <div class="text-center mt-2">
+                    <div class="text-center">
                         <div class="telemetry-label">Oil (°C)</div>
                         <div class="telemetry-value" id="t-oil-temp">0</div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
 
+        <!-- Bottom row: Lap Times + Tyre Temperatures -->
+        <div class="row g-2">
+            <div class="col-md-4">
+                <div class="dash-card h-100">
+                    <div class="telemetry-section-title">Lap Times</div>
+                    <div class="d-flex justify-content-between py-1 border-bottom border-secondary">
+                        <span class="text-secondary">Current</span>
+                        <span class="text-white fw-bold" id="t-cur-lap">--:--.---</span>
+                    </div>
+                    <div class="d-flex justify-content-between py-1 border-bottom border-secondary">
+                        <span class="text-secondary">Last</span>
+                        <span class="text-white" id="t-last-lap">--:--.---</span>
+                    </div>
+                    <div class="d-flex justify-content-between py-1 border-bottom border-secondary">
+                        <span class="text-secondary">Best</span>
+                        <span class="text-white" id="t-best-lap">--:--.---</span>
+                    </div>
+                    <div class="d-flex justify-content-between py-1 border-bottom border-secondary">
+                        <span class="text-secondary">Sector 1</span>
+                        <span class="text-white" id="t-s1">--</span>
+                    </div>
+                    <div class="d-flex justify-content-between py-1">
+                        <span class="text-secondary">Sector 2</span>
+                        <span class="text-white" id="t-s2">--</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-8">
+                <div class="dash-card h-100">
+                    <div class="telemetry-section-title">Tyre Temperatures (°C)</div>
+                    <div class="tyre-grid">
+                        <div class="tyre-box" id="tyre-fl"><div class="tyre-label">FL</div><div class="tyre-temp" id="tyre-fl-val">--</div></div>
+                        <div class="tyre-box" id="tyre-fr"><div class="tyre-label">FR</div><div class="tyre-temp" id="tyre-fr-val">--</div></div>
+                        <div class="tyre-box" id="tyre-rl"><div class="tyre-label">RL</div><div class="tyre-temp" id="tyre-rl-val">--</div></div>
+                        <div class="tyre-box" id="tyre-rr"><div class="tyre-label">RR</div><div class="tyre-temp" id="tyre-rr-val">--</div></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div><!-- end wheel-panel -->
 </div>
 
 <script src="/static/scripts/telemetry.js"></script>

@@ -1,4 +1,49 @@
-/* STRUCTURE */
+/* ===== THEME VARIABLES ===== */
+:root {
+    --base-font-size:       16px;
+    --bg-page:              #0d0d0d;
+    --bg-card:              #141414;
+    --text-primary:         #ffffff;
+    --text-secondary:       #888888;
+    --border-subtle:        rgba(255, 255, 255, 0.08);
+    --bar-track:            #2a2a2a;
+    --tab-active-bg:        #2a2a2a;
+    --tab-link-color:       #aaa;
+    --tab-border:           rgba(255, 255, 255, 0.15);
+    --input-bg:             #1a1a1a;
+    --input-border:         #555555;
+    --strategy-card-bg:     #141414;
+    --strategy-card-border: #444444;
+    --tyre-box-border:      rgba(255, 255, 255, 0.1);
+    --tyre-temp-color:      #ffffff;
+    --speed-display-color:  #ffffff;
+}
+
+[data-theme="light"] {
+    --bg-page:              #f0f0f0;
+    --bg-card:              #ffffff;
+    --text-primary:         #1a1a1a;
+    --text-secondary:       #666666;
+    --border-subtle:        rgba(0, 0, 0, 0.12);
+    --bar-track:            #dedede;
+    --tab-active-bg:        #e8e8e8;
+    --tab-link-color:       #555555;
+    --tab-border:           rgba(0, 0, 0, 0.15);
+    --input-bg:             #f8f8f8;
+    --input-border:         #cccccc;
+    --strategy-card-bg:     #ffffff;
+    --strategy-card-border: #cccccc;
+    --tyre-box-border:      rgba(0, 0, 0, 0.12);
+    --tyre-temp-color:      #1a1a1a;
+    --speed-display-color:  #1a1a1a;
+}
+
+html {
+    font-size: var(--base-font-size);
+}
+
+
+/* ===== STRUCTURE ===== */
 /* Main text */
 body
 {
@@ -133,15 +178,17 @@ body
 /* DASHBOARD */
 
 body {
-    background-color: #0d0d0d;
-    color: #fff;
+    background-color: var(--bg-page);
+    color: var(--text-primary);
+    transition: background-color 0.2s, color 0.2s;
 }
 
 .dash-card {
-    background-color: #141414;
-    border: 1px solid rgba(255,255,255,0.08);
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-subtle);
     border-radius: 10px;
     padding: 16px;
+    transition: background-color 0.2s, border-color 0.2s;
 }
 
 .telemetry-value {
@@ -156,7 +203,7 @@ body {
     font-size: 0.7rem;
     text-transform: uppercase;
     letter-spacing: 0.08em;
-    color: #888;
+    color: var(--text-secondary);
     margin-bottom: 4px;
 }
 
@@ -174,7 +221,7 @@ body {
 /* Progress bars */
 .bar-track {
     height: 14px;
-    background: #2a2a2a;
+    background: var(--bar-track);
     border-radius: 7px;
     overflow: hidden;
 }
@@ -201,24 +248,69 @@ body {
     border-radius: 8px;
     padding: 10px;
     text-align: center;
-    border: 1px solid rgba(255,255,255,0.1);
+    border: 1px solid var(--tyre-box-border);
     transition: background-color 0.3s;
 }
 
-.tyre-label { font-size: 0.7rem; text-transform: uppercase; color: #888; }
-.tyre-temp  { font-size: 1.6rem; font-weight: 700; color: #fff; font-family: 'Courier New', monospace; }
+.tyre-label { font-size: 0.7rem; text-transform: uppercase; color: var(--text-secondary); }
+.tyre-temp  { font-size: 1.6rem; font-weight: 700; color: var(--tyre-temp-color); font-family: 'Courier New', monospace; }
 
 .tyre-cold { background-color: #1a3a5c; }
 .tyre-good { background-color: #1a3d2b; }
 .tyre-warm { background-color: #3d3300; }
 .tyre-hot  { background-color: #4a1010; }
 
+/* Steering wheel dashboard */
+.wheel-panel {
+    max-width: 960px;
+}
+
+.wheel-center {
+    border: 2px solid rgba(0, 210, 190, 0.25);
+    border-radius: 12px;
+}
+
+.gear-display {
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 7rem;
+    font-weight: 900;
+    color: #00d2be;
+    line-height: 1;
+    text-shadow: 0 0 24px rgba(0, 210, 190, 0.45);
+}
+
+.speed-display {
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 3.2rem;
+    font-weight: 700;
+    color: var(--speed-display-color);
+    line-height: 1.1;
+}
+
+/* Help modal tabs — keep text readable against active/inactive backgrounds */
+#connect-tabs .nav-link {
+    color: var(--tab-link-color);
+    background-color: transparent;
+    border-color: transparent;
+}
+
+#connect-tabs .nav-link:hover {
+    color: var(--text-primary);
+    border-color: transparent;
+}
+
+#connect-tabs .nav-link.active {
+    color: var(--text-primary);
+    background-color: var(--tab-active-bg);
+    border-color: var(--tab-border) var(--tab-border) var(--tab-active-bg);
+}
+
 /* Strategy cards */
 .strategy-card {
-    background: #141414;
+    background: var(--strategy-card-bg);
     border-radius: 8px;
     padding: 14px 18px;
-    border-left: 4px solid #444;
+    border-left: 4px solid var(--strategy-card-border);
     display: flex;
     align-items: center;
 }
@@ -240,16 +332,32 @@ body {
 .badge-warning { background: #ffa502; color: #000; }
 .badge-alert   { background: #ff4757; color: #fff; }
 
+/* Form inputs — respect theme in setup/login/register */
+[data-theme="light"] .form-control.bg-dark {
+    background-color: var(--input-bg) !important;
+    color: var(--text-primary) !important;
+    border-color: var(--input-border) !important;
+}
+
+[data-theme="light"] .text-white {
+    color: var(--text-primary) !important;
+}
+
+[data-theme="light"] .text-secondary {
+    color: var(--text-secondary) !important;
+}
 
 /* OTHER COLOURS */
 .gold
 {
     background-color: #FFD700;
 }
+
 .silver
 {
     background-color: #C0C0C0;
 }
+
 .bronze
 {
     background-color: #CD7F32;

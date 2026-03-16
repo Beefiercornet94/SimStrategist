@@ -249,14 +249,7 @@ def strategy():
 @app.route("/setup", methods=["GET", "POST"])
 @login_required
 def setup():
-    if request.method == "GET":
         return render_template("setup.html")
-    
-    elif request.method == "POST":
-        return redirect("/")
-
-    else:
-        return apology("We f**ked up :/", 500)
 
 
 if __name__ == "__main__":

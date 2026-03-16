@@ -6,8 +6,31 @@
 <div class="container py-5" style="max-width: 480px;">
 
     <div class="text-center mb-4">
-        <h2 class="text-white fw-bold">Account</h2>
+        <h2 class="fw-bold" style="color: var(--text-primary);">Account</h2>
         <p class="text-secondary">Manage your SimStrategist account</p>
+    </div>
+
+    <!-- Display settings -->
+    <div class="dash-card mb-4">
+        <p class="telemetry-section-title mb-3">Display Settings</p>
+
+        <!-- Dark / Light mode -->
+        <div class="d-flex align-items-center justify-content-between mb-3">
+            <span style="color: var(--text-primary);">Light Mode</span>
+            <div class="form-check form-switch mb-0">
+                <input class="form-check-input" type="checkbox" id="theme-toggle" role="switch">
+            </div>
+        </div>
+
+        <!-- Font size -->
+        <div>
+            <div class="d-flex justify-content-between mb-1">
+                <span style="color: var(--text-primary);">Font Size</span>
+                <span id="font-size-label" style="color: var(--text-secondary); font-family: 'Courier New', monospace;">16px</span>
+            </div>
+            <input type="range" class="form-range" id="font-size-slider"
+                   min="12" max="22" step="1" value="16">
+        </div>
     </div>
 
     <!-- Logged-in panel -->
@@ -54,4 +77,5 @@
     </div>
 
 </div>
+<script src="/static/scripts/setup.js"></script>
 {% endblock %}
