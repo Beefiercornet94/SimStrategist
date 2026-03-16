@@ -3,6 +3,7 @@
 # Import requirements
 import json
 import os
+import threading
 import time
 from cs50 import SQL
 from flask import Flask, Response, flash, jsonify, redirect, render_template, request, session, stream_with_context
@@ -16,6 +17,9 @@ from f1.telemetry_state import state as f1_state
 from lmu.server import TcpListener as LmuTcpListener
 from lmu.telemetry_state import state as lmu_state
 
+from strategy.weather_history import weather_history
+from strategy.ai_strategy import analyze_strategy
+
 
 # Configure application
 app = Flask(__name__)
@@ -27,6 +31,39 @@ _udp_listener.start()
 # Start LMU TCP listener as background daemon thread
 _lmu_listener = LmuTcpListener()
 _lmu_listener.start()
+
+# Background thread: sample weather from both telemetry states every 10 s
+def _weather_sampler():
+    while True:
+        try:
+            f1_snap = f1_state.get_snapshot()
+            if f1_snap['connected']:
+                s   = f1_snap['session']
+                lap = f1_snap['lap_data'].get('current_lap', 0) or 0
+                weather_history.record(
+                    'f1', lap,
+                    s.get('weather', 0),
+                    s.get('track_temperature', 0),
+                    s.get('air_temperature', 0),
+                )
+
+            lmu_snap = lmu_state.get_snapshot()
+            if lmu_snap['connected']:
+                s   = lmu_snap['session']
+                lap = lmu_snap['lap_data'].get('current_lap', 0) or 0
+                flag = (s.get('flag') or '').lower()
+                weather_history.record(
+                    'lmu', lap,
+                    3 if 'rain' in flag else 0,
+                    s.get('track_temp', 0),
+                    s.get('ambient_temp', 0),
+                )
+        except Exception:
+            pass
+        time.sleep(10)
+
+_sampler = threading.Thread(target=_weather_sampler, daemon=True)
+_sampler.start()
 
 # Configure session to use filesystem (instead of signed cookies)
 app.config["SESSION_PERMANENT"] = False
@@ -172,6 +209,26 @@ def api_telemetry_stream():
         headers={"X-Accel-Buffering": "no", "Cache-Control": "no-cache"},
     )
 
+@app.route("/api/weather/history")
+def api_weather_history():
+    """Return the recorded weather history for the requested game."""
+    game = request.args.get("game", "f1").lower()
+    return jsonify(weather_history.get_history(game))
+
+@app.route("/api/strategy/ai", methods=["POST"])
+def api_strategy_ai():
+    """
+    Run AI strategy analysis via Claude.
+    Body: {"game": "f1"|"lmu"}
+    """
+    body = request.get_json(silent=True) or {}
+    game = body.get("game", request.args.get("game", "f1")).lower()
+    try:
+        result = analyze_strategy(game)
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 @app.route("/telemetry")
 def telemetry():
     return render_template("telemetry.html")
@@ -198,3 +255,5 @@ def setup():
 
 if __name__ == "__main__":
     app.run(debug=True, use_reloader=False, threaded=True)
+
+# export ANTHROPIC_API_KEY=your-key-here

@@ -1,6 +1,8 @@
-os
 flask
 flask_session
 cs50
 requests
 werkzeug
+anthropic
+numpy
+pandas

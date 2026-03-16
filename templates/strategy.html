@@ -4,9 +4,19 @@
 
 {% block body %}
 <div class="container py-4">
-    <h4 class="text-white fw-bold mb-4">Strategy Co-Pilot</h4>
+    <div class="d-flex align-items-center mb-4 gap-3 flex-wrap">
+        <h4 class="text-white fw-bold mb-0">Strategy Co-Pilot</h4>
 
-    <!-- Session Summary -->
+        <!-- Game toggle (matches telemetry page) -->
+        <div class="btn-group btn-group-sm" role="group" id="game-toggle">
+            <button type="button" class="btn btn-primary active" data-game="f1">F1</button>
+            <button type="button" class="btn btn-outline-primary" data-game="lmu">Le Mans Ultimate</button>
+        </div>
+
+        <span id="conn-badge" class="badge bg-secondary">Connecting...</span>
+    </div>
+
+    <!-- ── Session Summary ───────────────────────────────────────────────── -->
     <div class="dash-card mb-4">
         <div class="telemetry-section-title">Session Summary</div>
         <div class="row g-2 mt-1 text-center">
@@ -19,8 +29,8 @@
                 <div class="text-white fw-bold fs-4" id="s-lap">--</div>
             </div>
             <div class="col-6 col-md-2">
-                <div class="telemetry-label">Total Laps</div>
-                <div class="text-white fw-bold fs-4" id="s-total-laps">--</div>
+                <div class="telemetry-label" id="s-extra-label">Total Laps</div>
+                <div class="text-white fw-bold fs-4" id="s-extra">--</div>
             </div>
             <div class="col-6 col-md-2">
                 <div class="telemetry-label">Track Temp</div>
@@ -31,14 +41,61 @@
                 <div class="text-white fw-bold fs-4" id="s-air-temp">--°C</div>
             </div>
             <div class="col-6 col-md-2">
-                <div class="telemetry-label">Weather</div>
+                <div class="telemetry-label" id="s-wx-label">Weather</div>
                 <div class="text-white fw-bold fs-5" id="s-weather">--</div>
+            </div>
+        </div>
+
+        <!-- F1 Tyre / Fuel row -->
+        <div id="tyre-fuel-row" class="row g-2 mt-2 text-center">
+            <div class="col-6 col-md-3">
+                <div class="telemetry-label">Tyre Compound</div>
+                <div class="text-white fw-bold fs-5" id="s-compound">--</div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="telemetry-label">Tyre Age</div>
+                <div class="text-white fw-bold fs-5" id="s-tyre-age">-- laps</div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="telemetry-label" id="s-fuel-label">Fuel / Laps</div>
+                <div class="text-white fw-bold fs-5" id="s-fuel">--</div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="telemetry-label">Best Lap</div>
+                <div class="text-white fw-bold fs-5" id="s-best-lap">--</div>
             </div>
         </div>
     </div>
 
-    <!-- Recommendations -->
-    <div class="telemetry-section-title mb-3">Recommendations</div>
+    <!-- ── Weather / Conditions History ──────────────────────────────────── -->
+    <div class="dash-card mb-4">
+        <div class="d-flex align-items-center justify-content-between mb-2">
+            <div class="telemetry-section-title mb-0" id="wx-section-title">Weather History</div>
+            <span class="text-secondary" style="font-size:.75rem;" id="wx-update-time"></span>
+        </div>
+        <div id="wx-history-body">
+            <p class="text-secondary mb-0" style="font-size:.85rem;">
+                Waiting for data — conditions are recorded every time weather or temperature changes by 2°C or more.
+            </p>
+        </div>
+    </div>
+
+    <!-- ── AI Strategy Analysis ───────────────────────────────────────────── -->
+    <div class="dash-card mb-4">
+        <div class="d-flex align-items-center justify-content-between mb-3">
+            <div class="telemetry-section-title mb-0">AI Strategy Analysis</div>
+            <button id="btn-analyse" class="btn btn-sm btn-outline-light">
+                Analyse Strategy
+            </button>
+        </div>
+
+        <div id="ai-status" class="text-secondary mb-3" style="font-size:.85rem; display:none;"></div>
+
+        <div id="ai-strategy-grid" class="row g-3" style="display:none !important;"></div>
+    </div>
+
+    <!-- ── Live Recommendations ───────────────────────────────────────────── -->
+    <div class="telemetry-section-title mb-3">Live Recommendations</div>
     <div id="recommendations-list"></div>
 </div>
 

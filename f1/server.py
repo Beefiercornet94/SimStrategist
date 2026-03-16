@@ -21,9 +21,10 @@ UDP_PORT = 20777
 BUFFER_SIZE = 2048
 
 # Packet IDs
-PACKET_ID_SESSION = 1
-PACKET_ID_LAP_DATA = 2
+PACKET_ID_SESSION      = 1
+PACKET_ID_LAP_DATA     = 2
 PACKET_ID_CAR_TELEMETRY = 6
+PACKET_ID_CAR_STATUS   = 7
 
 class F1PacketParser:
     """Parses binary packets from F1 24"""
@@ -214,6 +215,63 @@ class F1PacketParser:
         except struct.error:
             return None
 
+    @staticmethod
+    def parse_car_status(packet, player_index):
+        """
+        Parse Car Status Data (ID 7).
+        Extracts tyre compound, tyre age, fuel in tank, and fuel remaining laps.
+
+        Per-car struct (F1 2023/24 spec):
+          B  tractionControl
+          B  antiLockBrakes
+          B  fuelMix
+          B  frontBrakeBias
+          B  pitLimiterStatus
+          f  fuelInTank
+          f  fuelCapacity
+          f  fuelRemainingLaps
+          H  maxRPM
+          H  idleRPM
+          B  maxGears
+          B  drsAllowed
+          H  drsActivationDistance
+          B  actualTyreCompound
+          B  visualTyreCompound
+          B  tyresAgeLaps
+          b  vehicleFiaFlags  (signed)
+          f  enginePowerICE
+          f  enginePowerMGUK
+          f  ersStoreEnergy
+          B  ersDeployMode
+          f  ersHarvestedThisLapMGUK
+          f  ersHarvestedThisLapMGUH
+          f  ersDeployedThisLap
+          B  networkPaused
+        Total: 55 bytes per car
+        """
+        header_fmt  = '<HBBBBQfIIBB'
+        header_size = struct.calcsize(header_fmt)
+
+        car_fmt  = '<BBBBBfffHHBBHBBBbfffBfffB'
+        car_size = struct.calcsize(car_fmt)   # 55 bytes
+
+        offset = header_size + (player_index * car_size)
+        if len(packet) < offset + car_size:
+            return None
+
+        try:
+            d = struct.unpack(car_fmt, packet[offset:offset + car_size])
+            return {
+                'fuel_in_tank':          d[5],
+                'fuel_remaining_laps':   d[7],
+                'tyre_actual_compound':  d[13],
+                'tyre_visual_compound':  d[14],
+                'tyre_age_laps':         d[15],
+            }
+        except struct.error:
+            return None
+
+
 class UdpListener(threading.Thread):
     def __init__(self):
         super(UdpListener, self).__init__()
@@ -262,6 +320,11 @@ class UdpListener(threading.Thread):
                         result = F1PacketParser.parse_session_data(data)
                         if result:
                             state.update_session(result)
+
+                    elif packet_id == PACKET_ID_CAR_STATUS:
+                        result = F1PacketParser.parse_car_status(data, player_index)
+                        if result:
+                            state.update_telemetry(result)
 
                     logger.info(result)
                 except struct.error as se:

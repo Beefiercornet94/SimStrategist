@@ -60,7 +60,14 @@ class TelemetryState:
             'drs': 0,
             'rev_lights_percent': 0,
             'engine_temp': 0,
-            'tyres_surface_temp': [0, 0, 0, 0]
+            'tyres_surface_temp': [0, 0, 0, 0],
+            # From Car Status packet (ID 7)
+            'tyre_actual_compound': 255,   # raw F1 compound ID
+            'tyre_visual_compound': 255,   # 16=Soft 17=Medium 18=Hard 7=Inter 8=Wet
+            'tyre_age_laps': 0,
+            'tyre_wear': [0.0, 0.0, 0.0, 0.0],   # FL/FR/RL/RR percentage
+            'fuel_in_tank': 0.0,           # kg
+            'fuel_remaining_laps': 0.0,    # estimated laps of fuel left
         }
         
         self.lap_data: Dict[str, Any] = {
