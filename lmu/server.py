@@ -29,7 +29,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger('LMUJSON')
 
 HOST    = '127.0.0.1'
-PORT    = 5000
+PORT    = 5100
 BUFSIZE = 65535   # max UDP datagram; TCP uses readline
 
 
