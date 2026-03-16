@@ -45,3 +45,5 @@ This will start a UDP listener on port 20777
 ## About me
 
 This is my first GitHub publication, so apologies for any badly-written code and/or unhelpful comments!
+
+Claude AI module inside Visual Studio Code used.
