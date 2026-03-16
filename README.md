@@ -17,8 +17,11 @@ SimStrategist is a tool that displays and analyses live in-game telemetry from v
 
 ### UDP Listener Startup
 
-- "cd f1" - This will change directory to the "F1" folder
-- "python3 server.py" - This will start a UDP listener on port 20777
+    cd f1
+This will change directory to the "F1" folder
+
+    python3 server.py
+This will start a UDP listener on port 20777
 
 ## External Code Used
 

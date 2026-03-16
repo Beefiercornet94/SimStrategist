@@ -188,7 +188,7 @@ def strategy():
 def setup():
     if request.method == "GET":
         return render_template("setup.html")
-
+    
     elif request.method == "POST":
         return redirect("/")
 
