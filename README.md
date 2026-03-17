@@ -25,7 +25,7 @@ SimStrategist is a tool that displays and analyses live in-game telemetry from v
 ```bash
 python3 f1/server.py
 ```
-We 
+
 > The listener receives data on **UDP port 20777**. Make sure your firewall allows this port if the game runs on a different machine.
 
 ---

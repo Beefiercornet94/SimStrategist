@@ -7,12 +7,13 @@ PERFORMANCE IMPROVEMENTS:
 - Zero-copy DataFrame construction
 - Optimized snapshot generation
 """
+
 import threading
 import time
 import pandas as pd
 import numpy as np
 from typing import Dict, Any, Optional
-from f1.config import Config
+from config import Config
 
 
 class TelemetryState:
@@ -22,6 +23,7 @@ class TelemetryState:
     Uses circular buffer with numpy arrays for memory-efficient storage.
     Approximately 50% less memory than deque-based approach.
     """
+    
     _instance: Optional['TelemetryState'] = None
     _lock = threading.Lock()
     

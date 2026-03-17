@@ -9,7 +9,7 @@ import socket
 import struct
 import threading
 import logging
-from f1.telemetry_state import state
+from telemetry_state import state
 
 # Setup logging
 logging.basicConfig(level=logging.INFO)
