@@ -1,6 +1,6 @@
 """
 AI Strategy Analyser
-Uses the Claude API (claude-sonnet-4-6) to produce three race strategies:
+Uses the OpenAI API (gpt-4o-mini) to produce three race strategies:
   - standard : optimal single/multi-stop based on current conditions
   - push     : aggressive; higher tyre/fuel usage, faster lap times
   - save     : conservative; tyre/fuel management, longer stints
@@ -11,7 +11,7 @@ relative to the standard strategy (negative = faster, positive = slower).
 import json
 import os
 
-import anthropic
+import openai
 
 from strategy.weather_history import weather_history, WEATHER_DESC
 
@@ -146,9 +146,9 @@ def analyze_strategy(game: str) -> dict:
     Build a context dict from live telemetry + weather history and ask
     Claude for three race strategies.  Returns the parsed JSON dict.
     """
-    api_key = os.environ.get('ANTHROPIC_API_KEY')
+    api_key = os.environ.get('OPENAI_API_KEY')
     if not api_key:
-        return {'error': 'ANTHROPIC_API_KEY environment variable is not set'}
+        return {'error': 'OPENAI_API_KEY environment variable is not set'}
 
     # Lazy import to avoid circular deps at module load time
     from f1.telemetry_state import state as f1_state
@@ -223,14 +223,14 @@ def analyze_strategy(game: str) -> dict:
 
     prompt = _build_prompt(ctx)
 
-    client   = anthropic.Anthropic(api_key=api_key)
-    response = client.messages.create(
-        model      = 'claude-sonnet-4-6',
+    client   = openai.OpenAI(api_key=api_key)
+    response = client.chat.completions.create(
+        model      = 'gpt-4o-mini',
         max_tokens = 1500,
         messages   = [{'role': 'user', 'content': prompt}],
     )
 
-    raw = response.content[0].text.strip()
+    raw = response.choices[0].message.content.strip()
     # Strip accidental markdown fences
     if raw.startswith('```'):
         raw = raw.split('\n', 1)[1]

@@ -4,7 +4,7 @@
 
 SimStrategist is a Flask web app that displays and analyses live in-game telemetry from racing simulators. It currently supports **F1 2022/2023/2024** (via binary UDP packets) and has placeholder support for **Le Mans Ultimate** (LMU, via JSON over TCP/UDP).
 
-A Claude-powered AI strategy analyser is also built in, using real-time weather and tyre data to recommend pit strategies.
+A ChatGPT-powered AI strategy analyser is also built in, using real-time weather and tyre data to recommend pit strategies.
 
 ---
 
@@ -12,12 +12,12 @@ A Claude-powered AI strategy analyser is also built in, using real-time weather 
 
 Two independent processes must run simultaneously:
 
-```
+```text
 F1 game ──UDP:20777──▶ f1/server.py ──▶ f1/telemetry_state.py ──▶ app.py API routes ──▶ browser
                         (binary parse)     (thread-safe singleton)   (SSE / JSON)
 ```
 
-```
+```text
 LMU game ──TCP:5100──▶ lmu/server.py ──▶ lmu/telemetry_state.py ──▶ app.py API routes ──▶ browser
                         (JSON parse)       (thread-safe singleton)
 ```
@@ -27,14 +27,14 @@ Both listeners run as **daemon threads inside `app.py`** — you only need to st
 ### Key files
 
 | File | Role |
-|------|------|
+| ---- | ---- |
 | `app.py` | Flask app, starts background threads, defines all HTTP routes |
 | `f1/server.py` | Parses binary F1 UDP packets; optionally records them |
 | `f1/telemetry_state.py` | Thread-safe singleton with numpy circular buffers |
 | `f1/config.py` | UDP settings, buffer sizes, UI colours |
 | `f1/recorder.py` | Standalone UDP sniffer — saves packets to a `.f1rec` file |
 | `f1/replayer.py` | Reads a `.f1rec` file and replays packets over UDP |
-| `strategy/ai_strategy.py` | Calls Claude API to generate 3 race strategies |
+| `strategy/ai_strategy.py` | Calls OpenAI API to generate 3 race strategies |
 | `strategy/weather_history.py` | Records weather samples every 10 s during a session |
 | `lmu/server.py` | JSON-over-TCP/UDP listener for Le Mans Ultimate |
 
@@ -58,10 +58,10 @@ sqlite3 strategist.db < queries/create_games.sqlite3-query
 sqlite3 strategist.db < queries/create_sessions.sqlite3-query
 ```
 
-### 3. Set the Anthropic API key (for AI strategy)
+### 3. Set the OpenAI API key (for AI strategy)
 
 ```bash
-export ANTHROPIC_API_KEY=your-key-here
+export OPENAI_API_KEY=your-key-here
 ```
 
 Without this the `/api/strategy/ai` endpoint will return an error, but everything else works fine.
@@ -75,7 +75,6 @@ python3 app.py
 Open [http://localhost:5051](http://localhost:5051). Register an account, then go to `/setup` to configure your game.
 
 > **Port**: defaults to `5051`. Override with `PORT=8080 python3 app.py`.
-
 > **F1 game setting**: in-game go to *Settings → Telemetry Settings* and set the UDP IP to your machine's IP and port to `20777`.
 
 ---
@@ -83,7 +82,7 @@ Open [http://localhost:5051](http://localhost:5051). Register an account, then g
 ## API Routes
 
 | Method | Path | Description |
-|--------|------|-------------|
+| ------ | ---- | ----------- |
 | `GET` | `/api/telemetry` | Single JSON snapshot of current state |
 | `GET` | `/api/telemetry/stream?game=f1\|lmu` | Server-Sent Events stream (~60 Hz) |
 | `GET` | `/api/weather/history?game=f1\|lmu` | Weather history list for this session |
@@ -126,7 +125,7 @@ The recording system lets you capture a real game session and replay it later fo
 
 A compact binary format:
 
-```
+```text
 Bytes 0–15  : Header — magic b'F1REC\x00', version uint8, 9 reserved bytes
 Per packet  : float64 timestamp (seconds since start)
               uint16  packet length
@@ -207,7 +206,7 @@ Flask's reloader forks the process, which would start duplicate UDP listener thr
 
 The circular buffer uses pre-allocated `numpy` arrays instead of `deque` for ~50% lower memory usage. When the buffer is full, the oldest entry is overwritten. `get_history_df()` handles the wrap-around when constructing the `DataFrame`.
 
-```
+```text
 history_index ──▶  [  old  |  new  |  newest  |  oldest  |  ... ]
                     ^write position; wraps to 0 when it reaches maxlen
 ```
@@ -219,19 +218,19 @@ history_index ──▶  [  old  |  new  |  newest  |  oldest  |  ... ]
 `/api/strategy/ai` calls `strategy/ai_strategy.py`, which:
 
 1. Takes a snapshot of the current telemetry + weather history.
-2. Builds a structured prompt and calls Claude (via the Anthropic SDK).
+2. Builds a structured prompt and calls `gpt-4o-mini` via the OpenAI SDK.
 3. Returns three strategies: **Standard**, **Push**, and **Fuel-save**, each with stop laps, compounds, and estimated time delta.
 
-Requires `ANTHROPIC_API_KEY` to be set.
+Requires `OPENAI_API_KEY` to be set.
 
 ---
 
 ## Common issues
 
 | Problem | Likely cause |
-|---------|-------------|
+| ------- | ------------ |
 | Dashboard shows "Disconnected" | Game not sending to port 20777, or firewall blocking UDP |
 | `Address already in use` on startup | Another process is on 5051; set `PORT=xxxx` env var |
-| AI strategy returns error | `ANTHROPIC_API_KEY` not set or invalid |
+| AI strategy returns error | `OPENAI_API_KEY` not set or invalid |
 | Replay has no effect on dashboard | App not running, or replaying to wrong port |
 | Recording stops mid-session | Disk full, or `Ctrl+C` — recordings flush on clean exit |

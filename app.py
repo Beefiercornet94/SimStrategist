@@ -260,5 +260,3 @@ if __name__ == "__main__":
     # use_reloader=False: Flask's reloader forks the process, which would create
     # duplicate UDP/TCP listener threads. threaded=True handles concurrent SSE clients.
     app.run(debug=True, use_reloader=False, threaded=True, host="0.0.0.0", port=port)
-
-# export ANTHROPIC_API_KEY=your-key-here
