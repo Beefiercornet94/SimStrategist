@@ -5,11 +5,20 @@ F1 24 UDP Client
 Handles receiving and parsing binary UDP packets from the F1 game.
 Specific to F1 23/24 Packet Format (2023 Spec).
 """
+import argparse
+import os
 import socket
 import struct
 import threading
+import time
 import logging
 from telemetry_state import state
+
+# Recording constants (shared with recorder.py / replayer.py)
+_REC_MAGIC = b'F1REC\x00'
+_REC_VERSION = 1
+_REC_HEADER_SIZE = 16
+_REC_PKT_HDR_FMT = '<dH'
 
 # Setup logging
 logging.basicConfig(level=logging.INFO)
@@ -273,27 +282,62 @@ class F1PacketParser:
 
 
 class UdpListener(threading.Thread):
-    def __init__(self):
+    def __init__(self, record_to: str = None):
+        """
+        :param record_to: Optional path to a .f1rec file. When set, all raw UDP
+                          packets are saved to this file alongside normal processing.
+        """
         super(UdpListener, self).__init__()
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.running = False
         self.daemon = True
-        
+        self._record_to = record_to
+        self._rec_file = None
+        self._rec_start = None
+
+    def _open_recording(self):
+        path = self._record_to
+        os.makedirs(os.path.dirname(path) if os.path.dirname(path) else '.', exist_ok=True)
+        f = open(path, 'wb')
+        # 16-byte file header: 6-byte magic + 1-byte version + 9 reserved bytes
+        f.write(_REC_MAGIC + bytes([_REC_VERSION]) + b'\x00' * 9)
+        logger.info(f"Recording packets to {path!r}")
+        return f
+
+    def _write_packet(self, data: bytes):
+        # Save the raw datagram (not the parsed dict) so replayer.py can run the
+        # full parsing pipeline and catch any future parser bugs during replay.
+        now = time.monotonic()
+        if self._rec_start is None:
+            self._rec_start = now
+        elapsed = now - self._rec_start
+        self._rec_file.write(struct.pack(_REC_PKT_HDR_FMT, elapsed, len(data)))
+        self._rec_file.write(data)
+
     def run(self):
         self.running = True
+        if self._record_to:
+            self._rec_file = self._open_recording()
         try:
             # Allow address reuse to prevent "Address already in use" errors on restart
             self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
             self.sock.bind((UDP_IP, UDP_PORT))
             logger.info(f"UDP Listener started on port {UDP_PORT}")
-            
+
+            pkt_count = 0
             while self.running:
                 try:
                     data, _ = self.sock.recvfrom(BUFFER_SIZE)
-                    # Parse Header first to get ID and Player Index
-                    # Parse Header first to get ID and Player Index
+
+                    if self._rec_file:
+                        self._write_packet(data)
+                        pkt_count += 1
+                        if pkt_count % 500 == 0:
+                            # Periodic flush so data isn't lost if the process is killed
+                            self._rec_file.flush()
+
                     # F1 24 Header Format with Overall Frame ID and Secondary Player Index
-                    header_fmt = '<HBBBBQfIIBB' 
+                    header_fmt = '<HBBBBQfIIBB'
                     header_size = struct.calcsize(header_fmt)
                     
                     if len(data) < header_size:
@@ -302,9 +346,9 @@ class UdpListener(threading.Thread):
                     # Unpack header
                     header_raw = struct.unpack(header_fmt, data[:header_size])
                     packet_id = header_raw[4]
-                    player_index = header_raw[9] # Index 9 in new format (was 8)
-                    
-                    # Dispatch based on packet type
+                    player_index = header_raw[9]  # secondary player index (F1 24 header offset 9)
+
+                    # Route each packet type to its parser; other packet IDs are ignored
                     if packet_id == PACKET_ID_CAR_TELEMETRY:
                         result = F1PacketParser.parse_car_telemetry(data, player_index)
                         if result:
@@ -337,10 +381,19 @@ class UdpListener(threading.Thread):
         finally:
             logger.info("UDP Listener stopping...")
             self.sock.close()
-            
+            if self._rec_file:
+                self._rec_file.close()
+                logger.info(f"Recording closed: {self._record_to!r}")
+
     def stop(self):
         self.running = False
 
+
 if __name__ == '__main__':
-    Listener = UdpListener()
-    Listener.run()
+    parser = argparse.ArgumentParser(description='F1 UDP telemetry listener')
+    parser.add_argument('--record', metavar='FILE',
+                        help='Also save raw packets to a .f1rec file (e.g. example-data/session.f1rec)')
+    args = parser.parse_args()
+
+    listener = UdpListener(record_to=args.record)
+    listener.run()

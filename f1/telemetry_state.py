@@ -187,40 +187,38 @@ class TelemetryState:
     def get_history_df(self, limit: Optional[int] = None) -> pd.DataFrame:
         """
         Get telemetry history as a Pandas DataFrame (Zero-copy construction)
-        
+
         Args:
             limit: Maximum number of recent points to return
-            
+
         Returns:
             DataFrame containing historical telemetry data
         """
         with self._lock:
             if self.history_count == 0:
                 return pd.DataFrame()
-            
-            # Determine actual data range
+
             count = min(limit, self.history_count) if limit else self.history_count
-            
-            # Handle circular buffer wrapping
+
             if self.history_count < self.history_maxlen:
-                # Buffer not yet full, data is contiguous from start
+                # Buffer not yet full — data lives in a contiguous block from index 0
                 slice_start = 0
                 slice_end = self.history_count
             else:
-                # Buffer full and wrapped, data starts at write index
+                # Buffer has wrapped: oldest entry is at history_index, newest is just before it.
+                # Layout: [newest-tail ... | oldest ... newest-head]
+                #                          ^history_index
                 if limit and limit < self.history_count:
-                    # Calculate start position for limited data
                     slice_start = (self.history_index - limit) % self.history_maxlen
                 else:
                     slice_start = self.history_index
                 slice_end = self.history_index
-            
-            # Zero-copy slice extraction
+
             if slice_end > slice_start:
-                # Contiguous slice
+                # Common case: data fits in one contiguous slice
                 indices = slice(slice_start, slice_end)
             else:
-                # Wrapped slice - need to concatenate
+                # Wrap-around case: data spans the end and start of the array
                 indices = np.concatenate([
                     np.arange(slice_start, self.history_maxlen),
                     np.arange(0, slice_end)

@@ -24,15 +24,17 @@ from strategy.ai_strategy import analyze_strategy
 # Configure application
 app = Flask(__name__)
 
-# Start F1 UDP listener as background daemon thread
+# Listeners run as daemon threads inside this process so a single `python3 app.py`
+# starts everything. use_reloader=False (bottom of file) prevents Flask's dev
+# reloader from forking and spawning duplicate listener threads.
 _udp_listener = UdpListener()
 _udp_listener.start()
 
-# Start LMU TCP listener as background daemon thread
 _lmu_listener = LmuTcpListener()
 _lmu_listener.start()
 
-# Background thread: sample weather from both telemetry states every 10 s
+# Samples weather from the live telemetry state every 10 s so the AI strategist
+# has a complete picture of how conditions evolved over the race.
 def _weather_sampler():
     while True:
         try:
@@ -201,11 +203,12 @@ def api_telemetry_stream():
         while True:
             updated = src.last_update_time
             if updated > last_seen:
+                # New data arrived — push a snapshot to the browser
                 last_seen = updated
                 payload = json.dumps(src.get_snapshot())
                 yield f"data: {payload}\n\n"
             else:
-                # Keepalive comment so the connection stays open
+                # No new data — send an SSE comment to keep the connection alive
                 yield ": keepalive\n\n"
             time.sleep(0.016)   # ~60 Hz check rate → ≤16 ms latency
 
@@ -254,6 +257,8 @@ def setup():
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5051))
+    # use_reloader=False: Flask's reloader forks the process, which would create
+    # duplicate UDP/TCP listener threads. threaded=True handles concurrent SSE clients.
     app.run(debug=True, use_reloader=False, threaded=True, host="0.0.0.0", port=port)
 
 # export ANTHROPIC_API_KEY=your-key-here
