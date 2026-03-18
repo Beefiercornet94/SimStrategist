@@ -63,13 +63,13 @@ Then open your browser and navigate to `http://127.0.0.1:5000`.
 
 ### From various CS50 problem sets
 
-- Login flask route
-- "login.html"
-- Logout flask route
-- Register flask route
-- "register.html"
-- "apology.html"
-- "apology" function
+- `Login` flask route
+- `login.html`
+- `Logout` flask route
+- `Register` flask route
+- `register.html`
+- `apology.html`
+- `apology()` function
 
  (CSS / JavaScript added/removed for aesthetic purposes)
 
