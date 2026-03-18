@@ -8,7 +8,8 @@ const F1_SESSION_TYPES = {
 
 // ---------- state ----------
 let activeGame = 'f1';
-let es = null;   // active EventSource
+let es = null;        // active EventSource
+let isRecording = false;
 
 // ---------- formatters ----------
 function fmtMs(ms) {
@@ -162,9 +163,52 @@ function connect(game) {
     };
 }
 
+// ---------- recording ----------
+function setRecordingUI(recording, path) {
+    isRecording = recording;
+    const btn   = document.getElementById('record-btn');
+    const label = document.getElementById('record-label');
+    const badge = document.getElementById('record-badge');
+
+    if (recording) {
+        btn.classList.replace('btn-outline-danger', 'btn-danger');
+        label.textContent = 'Stop';
+        badge.style.display = '';
+        badge.className = 'badge bg-danger';
+        badge.textContent = path ? path.split('/').pop() : 'Recording...';
+    } else {
+        btn.classList.replace('btn-danger', 'btn-outline-danger');
+        label.textContent = 'Record';
+        badge.style.display = 'none';
+    }
+}
+
+async function startRecording(game) {
+    const res  = await fetch('/api/record/start', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({game})
+    });
+    const data = await res.json();
+    setRecordingUI(true, data.path);
+}
+
+async function stopRecording() {
+    await fetch('/api/record/stop', {method: 'POST'});
+    setRecordingUI(false, null);
+}
+
+document.getElementById('record-btn').addEventListener('click', async () => {
+    if (isRecording) {
+        await stopRecording();
+    } else {
+        await startRecording(activeGame);
+    }
+});
+
 // ---------- toggle ----------
 document.querySelectorAll('#game-toggle button').forEach(btn => {
-    btn.addEventListener('click', () => {
+    btn.addEventListener('click', async () => {
         document.querySelectorAll('#game-toggle button').forEach(b => {
             b.classList.replace('btn-primary', 'btn-outline-primary');
             b.classList.remove('active');
@@ -177,6 +221,12 @@ document.querySelectorAll('#game-toggle button').forEach(btn => {
         // Swap DRS/Fuel label
         document.getElementById('label-drs-fuel').textContent =
             activeGame === 'f1' ? 'DRS' : 'Fuel';
+
+        // If recording, stop the old game and start one for the new game
+        if (isRecording) {
+            await stopRecording();
+            await startRecording(activeGame);
+        }
 
         connect(activeGame);
     });

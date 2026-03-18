@@ -184,6 +184,13 @@ def index():
 
 #---------- TELEMETRY / STRATEGY ----------#
 
+def _recording_filename(game: str) -> str:
+    """Return an auto-named example-data path for the given game."""
+    import datetime
+    stamp = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
+    ext   = 'f1rec' if game == 'f1' else 'lmurec'
+    return f"example-data/{game}_{stamp}.{ext}"
+
 @app.route("/api/telemetry")
 def api_telemetry():
     return jsonify(f1_state.get_snapshot())
@@ -237,6 +244,37 @@ def api_strategy_ai():
         return jsonify(result)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+@app.route("/api/record/start", methods=["POST"])
+def api_record_start():
+    """Start recording telemetry for the given game.
+    Body: {"game": "f1"|"lmu"}
+    Auto-names the file example-data/{game}_{timestamp}.{ext}
+    """
+    body = request.get_json(silent=True) or {}
+    game = body.get("game", "f1").lower()
+    path = _recording_filename(game)
+    if game == "lmu":
+        _lmu_listener.start_recording(path)
+    else:
+        _udp_listener.start_recording(path)
+    return jsonify({"recording": True, "game": game, "path": path})
+
+@app.route("/api/record/stop", methods=["POST"])
+def api_record_stop():
+    """Stop any active recording."""
+    _udp_listener.stop_recording()
+    _lmu_listener.stop_recording()
+    return jsonify({"recording": False})
+
+@app.route("/api/record/status")
+def api_record_status():
+    """Return current recording state."""
+    if _udp_listener.is_recording:
+        return jsonify({"recording": True, "game": "f1", "path": _udp_listener.recording_path})
+    if _lmu_listener.is_recording:
+        return jsonify({"recording": True, "game": "lmu", "path": _lmu_listener.recording_path})
+    return jsonify({"recording": False})
 
 @app.route("/telemetry")
 def telemetry():

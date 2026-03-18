@@ -294,6 +294,7 @@ class UdpListener(threading.Thread):
         self._record_to = record_to
         self._rec_file = None
         self._rec_start = None
+        self._rec_lock = threading.Lock()
 
     def _open_recording(self):
         path = self._record_to
@@ -314,6 +315,34 @@ class UdpListener(threading.Thread):
         self._rec_file.write(struct.pack(_REC_PKT_HDR_FMT, elapsed, len(data)))
         self._rec_file.write(data)
 
+    def start_recording(self, path: str) -> None:
+        """Begin writing incoming UDP packets to *path* (.f1rec format)."""
+        with self._rec_lock:
+            if self._rec_file:
+                return  # already recording
+            self._record_to = path
+            self._rec_start = None
+            self._rec_file = self._open_recording()
+
+    def stop_recording(self) -> None:
+        """Flush and close the current recording file."""
+        with self._rec_lock:
+            if self._rec_file:
+                self._rec_file.flush()
+                self._rec_file.close()
+                self._rec_file = None
+                logger.info(f"Recording closed: {self._record_to!r}")
+                self._record_to = None
+                self._rec_start = None
+
+    @property
+    def is_recording(self) -> bool:
+        return self._rec_file is not None
+
+    @property
+    def recording_path(self) -> str | None:
+        return self._record_to
+
     def run(self):
         self.running = True
         if self._record_to:
@@ -329,12 +358,12 @@ class UdpListener(threading.Thread):
                 try:
                     data, _ = self.sock.recvfrom(BUFFER_SIZE)
 
-                    if self._rec_file:
-                        self._write_packet(data)
-                        pkt_count += 1
-                        if pkt_count % 500 == 0:
-                            # Periodic flush so data isn't lost if the process is killed
-                            self._rec_file.flush()
+                    with self._rec_lock:
+                        if self._rec_file:
+                            self._write_packet(data)
+                            pkt_count += 1
+                            if pkt_count % 500 == 0:
+                                self._rec_file.flush()
 
                     # F1 24 Header Format with Overall Frame ID and Secondary Player Index
                     header_fmt = '<HBBBBQfIIBB'

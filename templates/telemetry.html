@@ -16,6 +16,14 @@
 
         <span id="conn-badge" class="badge bg-secondary">Connecting...</span>
 
+        <button class="btn btn-sm btn-outline-danger" id="record-btn" title="Start recording telemetry">
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 16 16" style="vertical-align:-1px">
+                <circle cx="8" cy="8" r="8"/>
+            </svg>
+            <span id="record-label">Record</span>
+        </button>
+        <span id="record-badge" class="badge bg-secondary" style="display:none"></span>
+
         <button class="btn btn-sm btn-outline-secondary" id="help-btn"
                 data-bs-toggle="modal" data-bs-target="#connect-modal"
                 title="How to connect">

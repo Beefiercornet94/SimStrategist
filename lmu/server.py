@@ -19,8 +19,11 @@ Run standalone:
 import argparse
 import json
 import logging
+import os
 import socket
+import struct
 import threading
+import time
 from typing import Dict, Any
 
 from lmu.telemetry_state import state
@@ -31,6 +34,12 @@ logger = logging.getLogger('LMUJSON')
 HOST    = '127.0.0.1'
 PORT    = 5100
 BUFSIZE = 65535   # max UDP datagram; TCP uses readline
+
+# .lmurec recording constants (same binary layout as .f1rec)
+_REC_MAGIC      = b'LMUREC'
+_REC_VERSION    = 1
+_REC_HEADER_SIZE = 16   # 6 magic + 1 version + 9 reserved
+_REC_PKT_HDR_FMT = '<dH'  # float64 timestamp + uint16 length
 
 
 # ---------------------------------------------------------------------------
@@ -145,12 +154,16 @@ class TcpListener(threading.Thread):
     Reads newline-delimited JSON documents from the stream.
     """
 
-    def __init__(self, host: str = HOST, port: int = PORT) -> None:
+    def __init__(self, host: str = HOST, port: int = PORT, record_to: str = None) -> None:
         super().__init__(daemon=True)
         self.host = host
         self.port = port
         self.running = False
         self._server_sock: socket.socket | None = None
+        self._record_to = record_to
+        self._rec_file = None
+        self._rec_start: float | None = None
+        self._rec_lock = threading.Lock()
 
     def run(self) -> None:
         self.running = True
@@ -177,13 +190,67 @@ class TcpListener(threading.Thread):
         self._server_sock.close()
         logger.info("TCP listener stopped.")
 
+    def _open_recording(self, path: str):
+        os.makedirs(os.path.dirname(path) if os.path.dirname(path) else '.', exist_ok=True)
+        f = open(path, 'wb')
+        f.write(_REC_MAGIC + bytes([_REC_VERSION]) + b'\x00' * 9)
+        logger.info("Recording JSON stream to %r", path)
+        return f
+
+    def _write_record(self, data: bytes):
+        """Write one JSON record to the open recording file (caller holds _rec_lock)."""
+        now = time.monotonic()
+        if self._rec_start is None:
+            self._rec_start = now
+        elapsed = now - self._rec_start
+        self._rec_file.write(struct.pack(_REC_PKT_HDR_FMT, elapsed, len(data)))
+        self._rec_file.write(data)
+
+    def start_recording(self, path: str) -> None:
+        """Begin writing incoming JSON documents to *path* (.lmurec format)."""
+        with self._rec_lock:
+            if self._rec_file:
+                return  # already recording
+            self._record_to = path
+            self._rec_start = None
+            self._rec_file = self._open_recording(path)
+
+    def stop_recording(self) -> None:
+        """Flush and close the current recording file."""
+        with self._rec_lock:
+            if self._rec_file:
+                self._rec_file.flush()
+                self._rec_file.close()
+                self._rec_file = None
+                logger.info("Recording closed: %r", self._record_to)
+                self._record_to = None
+                self._rec_start = None
+
+    @property
+    def is_recording(self) -> bool:
+        return self._rec_file is not None
+
+    @property
+    def recording_path(self) -> str | None:
+        return self._record_to
+
     def _handle_connection(self, conn: socket.socket) -> None:
         try:
+            # Open recording if record_to was set at construction time
+            with self._rec_lock:
+                if self._record_to and not self._rec_file:
+                    self._rec_file = self._open_recording(self._record_to)
+
             with conn, conn.makefile('rb') as stream:
                 for raw_line in stream:
                     if not self.running:
                         break
+                    data = raw_line.strip()
                     _parse_and_dispatch(raw_line)
+                    if data:
+                        with self._rec_lock:
+                            if self._rec_file:
+                                self._write_record(data)
         except Exception as exc:
             logger.warning("Connection error: %s", exc)
         finally:
@@ -191,6 +258,7 @@ class TcpListener(threading.Thread):
 
     def stop(self) -> None:
         self.running = False
+        self.stop_recording()
 
 
 # ---------------------------------------------------------------------------
