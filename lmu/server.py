@@ -83,6 +83,11 @@ def _dispatch(doc: Dict[str, Any]) -> None:
         telemetry['engine_water_temp'] = float(vehicle['engineWaterTemp'])
     if 'engineOilTemp' in vehicle:
         telemetry['engine_oil_temp'] = float(vehicle['engineOilTemp'])
+    # Vehicle class — different plugin builds use different key names
+    for _cls_key in ('vehicleClass', 'carClass', 'class', 'vehicle_class'):
+        if _cls_key in vehicle:
+            telemetry['vehicle_class'] = str(vehicle[_cls_key])
+            break
 
     if telemetry:
         state.update_telemetry(telemetry)

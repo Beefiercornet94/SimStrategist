@@ -137,7 +137,17 @@
 
             <!-- Center column: gear (huge) + speed + pedals -->
             <div class="col-6">
-                <div class="dash-card wheel-center h-100 d-flex flex-column justify-content-center align-items-center text-center gap-1">
+                <div class="dash-card wheel-center h-100 d-flex flex-column justify-content-center align-items-center text-center gap-1" id="wheel-center-card">
+                    <!-- LMU class ring — hidden when F1 is active -->
+                    <div id="class-ring" style="display:none">
+                        <div class="class-ring-lights">
+                            <span></span><span></span><span></span>
+                            <span></span><span></span><span></span>
+                            <span></span><span></span><span></span>
+                        </div>
+                        <div class="class-ring-label" id="class-ring-label">--</div>
+                    </div>
+
                     <div class="telemetry-label">Gear</div>
                     <div class="gear-display" id="t-gear">N</div>
 

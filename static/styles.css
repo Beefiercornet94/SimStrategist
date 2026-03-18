@@ -287,6 +287,68 @@ body {
     line-height: 1.1;
 }
 
+/* ===== LMU CLASS RING ===== */
+.class-ring-lights {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 4px;
+}
+
+.class-ring-lights span {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--lmu-class-color, #333);
+    box-shadow:
+        0 0 5px 1px var(--lmu-class-color, #333),
+        0 0 14px 3px var(--lmu-class-color, #333);
+    transition: background 0.4s ease, box-shadow 0.4s ease;
+}
+
+@keyframes class-ring-flash {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0.1; }
+}
+
+.class-ring-lights.disconnected span {
+    background:  #ff4757;
+    box-shadow:  0 0 5px 1px #ff4757, 0 0 14px 3px #ff4757;
+    animation:   class-ring-flash 0.8s ease-in-out infinite;
+    transition:  none;
+}
+
+/* Centre dot slightly larger, shoulders scaled down toward edges */
+.class-ring-lights span:nth-child(5) { transform: scale(1.35); }
+.class-ring-lights span:nth-child(4),
+.class-ring-lights span:nth-child(6) { transform: scale(1.15); }
+.class-ring-lights span:nth-child(3),
+.class-ring-lights span:nth-child(7) { transform: scale(0.95); }
+.class-ring-lights span:nth-child(2),
+.class-ring-lights span:nth-child(8) { transform: scale(0.80); opacity: 0.75; }
+.class-ring-lights span:nth-child(1),
+.class-ring-lights span:nth-child(9) { transform: scale(0.65); opacity: 0.55; }
+
+.class-ring-label {
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--lmu-class-color, #888);
+    text-shadow: 0 0 8px var(--lmu-class-color, transparent);
+    text-align: center;
+    margin-bottom: 2px;
+}
+
+/* Coloured glow border on the wheel-center card when LMU class is known */
+.wheel-center-class-glow {
+    border-color: var(--lmu-class-color, rgba(0,210,190,0.25)) !important;
+    box-shadow: 0 0 18px var(--lmu-class-color-alpha, transparent),
+                inset 0 0 10px rgba(0, 0, 0, 0.4);
+    transition: border-color 0.4s ease, box-shadow 0.4s ease;
+}
+
 /* Help modal tabs — keep text readable against active/inactive backgrounds */
 #connect-tabs .nav-link {
     color: var(--tab-link-color);

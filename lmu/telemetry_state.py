@@ -42,16 +42,17 @@ class LMUTelemetryState:
         self._init_circular_buffer()
 
         self.telemetry: Dict[str, Any] = {
-            'speed': 0.0,       # m/s from plugin; converted to kph on read
+            'speed': 0.0,           # m/s from plugin; converted to kph on read
             'rpm': 0,
-            'gear': 0,          # 0 = neutral, -1 = reverse
-            'throttle': 0.0,    # 0.0–1.0
-            'brake': 0.0,       # 0.0–1.0
-            'clutch': 0.0,      # 0.0–1.0
-            'steer': 0.0,       # -1.0 (left) to 1.0 (right)
-            'fuel': 0.0,        # kg remaining
+            'gear': 0,              # 0 = neutral, -1 = reverse
+            'throttle': 0.0,        # 0.0–1.0
+            'brake': 0.0,           # 0.0–1.0
+            'clutch': 0.0,          # 0.0–1.0
+            'steer': 0.0,           # -1.0 (left) to 1.0 (right)
+            'fuel': 0.0,            # kg remaining
             'engine_water_temp': 0.0,
             'engine_oil_temp': 0.0,
+            'vehicle_class': '',    # e.g. "Hypercar", "LMP2", "LMP3", "LMGT3"
         }
 
         self.lap_data: Dict[str, Any] = {

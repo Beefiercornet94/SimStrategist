@@ -5,6 +5,71 @@ const F1_SESSION_TYPES = {
     8:'Short Qualifying', 9:'One-Shot Qualifying', 10:'Race', 11:'Race 2',
     12:'Race 3', 13:'Time Trial'
 };
+// Canonical WEC/LMU class colour map.
+// Keys are lower-cased, spaces/hyphens stripped versions of what the plugin sends.
+const LMU_CLASS_COLORS = {
+    'hy':         '#d4a017',  // Hypercar — ACO gold
+    'hypercar':   '#d4a017',
+    'lmh':        '#d4a017',  // Le Mans Hypercar spec
+    'lmdh':       '#d4a017',  // Le Mans Daytona H spec
+    'lmp2':       '#0057b8',  // LMP2 — WEC blue
+    'lmp3':       '#ff6d00',  // LMP3 — orange
+    'lmgt3':      '#00a651',  // LMGT3 — ACO green
+    'gt3':        '#00a651',
+    'gte':        '#00c87a',  // GTE Pro/Am (legacy class)
+    'gtepro':     '#00c87a',
+    'gteam':      '#00c87a',
+};
+
+const LMU_CLASS_LABELS = {
+    'hy': 'HY', 'hypercar': 'HY', 'lmh': 'HY', 'lmdh': 'HY',
+    'lmp2': 'LMP2', 'lmp3': 'LMP3',
+    'lmgt3': 'LMGT3', 'gt3': 'LMGT3',
+    'gte': 'GTE', 'gtepro': 'GTE Pro', 'gteam': 'GTE Am',
+};
+
+function normClassKey(raw) {
+    return (raw || '').toLowerCase().replace(/[\s\-_]/g, '');
+}
+
+// ---------- class ring ----------
+const _classRing    = document.getElementById('class-ring');
+const _classLabel   = document.getElementById('class-ring-label');
+const _wheelCenter  = document.getElementById('wheel-center-card');
+
+function updateClassRing(vehicleClass) {
+    const key   = normClassKey(vehicleClass);
+    const color = LMU_CLASS_COLORS[key];
+    const label = LMU_CLASS_LABELS[key] || (vehicleClass || '').toUpperCase() || '--';
+
+    if (color) {
+        // Build a slightly transparent version for the border glow
+        const hex = color.replace('#', '');
+        const r = parseInt(hex.slice(0,2), 16);
+        const g = parseInt(hex.slice(2,4), 16);
+        const b = parseInt(hex.slice(4,6), 16);
+        const alpha = `rgba(${r},${g},${b},0.35)`;
+
+        _wheelCenter.style.setProperty('--lmu-class-color', color);
+        _wheelCenter.style.setProperty('--lmu-class-color-alpha', alpha);
+        _wheelCenter.classList.add('wheel-center-class-glow');
+    } else {
+        _wheelCenter.style.removeProperty('--lmu-class-color');
+        _wheelCenter.style.removeProperty('--lmu-class-color-alpha');
+        _wheelCenter.classList.remove('wheel-center-class-glow');
+    }
+    _classLabel.textContent = label;
+}
+
+function showClassRing(show) {
+    _classRing.style.display = show ? '' : 'none';
+    if (!show) {
+        _wheelCenter.classList.remove('wheel-center-class-glow');
+        _wheelCenter.style.removeProperty('--lmu-class-color');
+        _wheelCenter.style.removeProperty('--lmu-class-color-alpha');
+    }
+}
+
 
 // ---------- state ----------
 let activeGame = 'f1';
@@ -141,6 +206,14 @@ function render(data) {
             t.engine_water_temp != null ? Math.round(t.engine_water_temp) : '--';
         document.getElementById('t-oil-temp').textContent =
             t.engine_oil_temp   != null ? Math.round(t.engine_oil_temp)   : '--';
+    }
+
+    // Class ring — LMU only
+    showClassRing(!isF1);
+    if (!isF1) {
+        const lights = document.querySelector('.class-ring-lights');
+        lights.classList.toggle('disconnected', !data.connected);
+        if (data.connected) updateClassRing(t.vehicle_class || '');
     }
 }
 
