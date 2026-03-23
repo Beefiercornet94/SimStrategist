@@ -16,7 +16,9 @@ SimStrategist is a tool that displays and analyses live in-game telemetry from v
 1. In the F1 game, go to **Settings → Telemetry Settings**.
 2. Set **UDP Telemetry** to `On`.
 3. Set **UDP Broadcast Mode** to `Off`.
-4. Set **UDP IP Address** to the IP of the machine running SimStrategist (use `127.0.0.1` if on the same PC).
+4. Set **UDP IP Address** to the IP of the machine running SimStrategist:
+    - Use `127.0.0.1` if on the same PC
+    - Find the IP address of the PC running it if you are using a seperate device
 5. Set **UDP Port** to `20777`.
 6. Set **UDP Send Rate** to `20Hz` (recommended).
 7. Set **UDP Format** to match your game year (e.g. `2023`).
@@ -34,7 +36,9 @@ python3 f1/server.py
 
 1. Download and install the **Ultimate Telemetry Socket – JSON Telemetry Plugin** from the Le Mans Ultimate community forums.
 2. Place the plugin DLL in your LMU `Plugins` folder.
-3. In the plugin configuration file, set the output host to `127.0.0.1` and port to `5100`.
+3. In the plugin configuration file, set the port to `5100` and the output host as below:
+    - Use `127.0.0.1` as the output hostif on the same PC
+    - Find the IP address of the PC running it if you are using a seperate device
 4. Start Le Mans Ultimate — the plugin will begin sending telemetry automatically.
 5. Start the telemetry listener:
 
