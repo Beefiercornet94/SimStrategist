@@ -9,6 +9,17 @@ SimStrategist is a tool that displays and analyses live in-game telemetry from v
 - F1 (2022 / 2023 / 2024)
 - Le Mans Ultimate
 
+## Features
+
+- **Live telemetry dashboard** — gear, speed, RPM shift lights, DRS, engine temps, tyre temps
+- **Driver inputs panel** — throttle, brake, clutch, and steering displayed in real time; toggle between bar view and scrolling graph view
+- **Lap times** — current, last, best, sector 1, and sector 2 times
+- **Strategy co-pilot** — AI-powered pit strategy recommendations using live tyre, fuel, and weather data
+- **Weather history** — records track and air temperature samples throughout a session
+- **Telemetry recording & replay** — capture a session to a `.f1rec` file and replay it later for development
+
+---
+
 ## Usage
 
 ### Connecting F1 (2022 / 2023 / 2024)

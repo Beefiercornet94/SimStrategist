@@ -4,7 +4,7 @@
 
 SimStrategist is a Flask web app that displays and analyses live in-game telemetry from racing simulators. It currently supports **F1 2022/2023/2024** (via binary UDP packets) and has placeholder support for **Le Mans Ultimate** (LMU, via JSON over TCP/UDP).
 
-A ChatGPT-powered AI strategy analyser is also built in, using real-time weather and tyre data to recommend pit strategies.
+A Claude-powered AI strategy analyser is built in, using real-time weather and tyre data to recommend pit strategies. The live telemetry dashboard also includes a **Driver Inputs** panel showing throttle, brake, clutch, and steering — switchable between a bar view and a scrolling graph.
 
 ---
 
@@ -34,9 +34,10 @@ Both listeners run as **daemon threads inside `app.py`** — you only need to st
 | `f1/config.py` | UDP settings, buffer sizes, UI colours |
 | `f1/recorder.py` | Standalone UDP sniffer — saves packets to a `.f1rec` file |
 | `f1/replayer.py` | Reads a `.f1rec` file and replays packets over UDP |
-| `strategy/ai_strategy.py` | Calls OpenAI API to generate 3 race strategies |
+| `strategy/ai_strategy.py` | Calls Claude API to generate 3 race strategies |
 | `strategy/weather_history.py` | Records weather samples every 10 s during a session |
 | `lmu/server.py` | JSON-over-TCP/UDP listener for Le Mans Ultimate |
+| `static/scripts/input-trace.js` | Driver Inputs panel — bar and graph rendering for throttle, brake, clutch, steering |
 
 ---
 
@@ -58,10 +59,10 @@ sqlite3 strategist.db < queries/create_games.sqlite3-query
 sqlite3 strategist.db < queries/create_sessions.sqlite3-query
 ```
 
-### 3. Set the OpenAI API key (for AI strategy)
+### 3. Set the Anthropic API key (for AI strategy)
 
 ```bash
-export OPENAI_API_KEY=your-key-here
+export ANTHROPIC_API_KEY=your-key-here
 ```
 
 Without this the `/api/strategy/ai` endpoint will return an error, but everything else works fine.
@@ -95,6 +96,7 @@ Open [http://localhost:5051](http://localhost:5051). Register an account, then g
   "connected": true,
   "telemetry": {
     "speed": 287, "throttle": 0.94, "brake": 0.0,
+    "clutch": 0, "steer": -0.12,
     "gear": 7, "rpm": 11450, "drs": 1,
     "tyre_visual_compound": 16,
     "tyre_age_laps": 12, "fuel_in_tank": 28.4,
@@ -218,10 +220,25 @@ history_index ──▶  [  old  |  new  |  newest  |  oldest  |  ... ]
 `/api/strategy/ai` calls `strategy/ai_strategy.py`, which:
 
 1. Takes a snapshot of the current telemetry + weather history.
-2. Builds a structured prompt and calls `gpt-4o-mini` via the OpenAI SDK.
+2. Builds a structured prompt and calls Claude via the Anthropic SDK.
 3. Returns three strategies: **Standard**, **Push**, and **Fuel-save**, each with stop laps, compounds, and estimated time delta.
 
-Requires `OPENAI_API_KEY` to be set.
+Requires `ANTHROPIC_API_KEY` to be set.
+
+---
+
+## Driver Inputs Panel
+
+The telemetry page includes a **Driver Inputs** panel below the tyre temperatures. It shows throttle, brake, clutch, and steering in real time, with a toggle between two display modes:
+
+| Mode | Description |
+| ---- | ----------- |
+| **Bars** | Horizontal progress bars; steering uses a center-origin bar that fills left or right |
+| **Graph** | Rolling canvas chart; maintains a 300-frame in-browser history, no extra API calls |
+
+**Channel colours:** throttle = green (`#00ff87`), brake = red (`#ff4757`), clutch = blue (`#4d9fec`), steering = grey (`#999`).
+
+The panel is driven by `static/scripts/input-trace.js`, which exposes a single function — `inputTrace.update(throttle, brake, clutch, steer)` — called from `telemetry.js` on every SSE frame. Clutch is normalized to 0–1 before being passed in (F1 sends 0–100, LMU sends 0.0–1.0).
 
 ---
 
@@ -231,6 +248,6 @@ Requires `OPENAI_API_KEY` to be set.
 | ------- | ------------ |
 | Dashboard shows "Disconnected" | Game not sending to port 20777, or firewall blocking UDP |
 | `Address already in use` on startup | Another process is on 5051; set `PORT=xxxx` env var |
-| AI strategy returns error | `OPENAI_API_KEY` not set or invalid |
+| AI strategy returns error | `ANTHROPIC_API_KEY` not set or invalid |
 | Replay has no effect on dashboard | App not running, or replaying to wrong port |
 | Recording stops mid-session | Disk full, or `Ctrl+C` — recordings flush on clean exit |
