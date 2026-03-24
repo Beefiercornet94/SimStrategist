@@ -57,6 +57,8 @@ class TelemetryState:
             'speed': 0,
             'throttle': 0,
             'brake': 0,
+            'clutch': 0,
+            'steer': 0,
             'gear': 0,
             'rpm': 0,
             'drs': 0,

@@ -246,8 +246,72 @@
             </div>
         </div>
 
+        <!-- Input Trace Panel -->
+        <div class="dash-card mt-2" id="input-trace-panel">
+            <div class="d-flex align-items-center justify-content-between mb-2">
+                <div class="telemetry-section-title mb-0">Driver Inputs</div>
+                <div class="btn-group btn-group-sm" id="input-mode-toggle">
+                    <button type="button" class="btn btn-sm btn-primary active" data-mode="bars">Bars</button>
+                    <button type="button" class="btn btn-sm btn-outline-primary" data-mode="graph">Graph</button>
+                </div>
+            </div>
+
+            <!-- Bars mode -->
+            <div id="input-bars">
+                <div class="d-flex align-items-center gap-2 mb-2">
+                    <span class="telemetry-label mb-0 input-trace-label">Throttle</span>
+                    <div class="flex-grow-1">
+                        <div class="bar-track">
+                            <div class="bar-fill bar-throttle" id="it-throttle-bar" style="width:0%"></div>
+                        </div>
+                    </div>
+                    <small class="text-secondary" id="it-throttle-val" style="min-width:36px;text-align:right">0%</small>
+                </div>
+                <div class="d-flex align-items-center gap-2 mb-2">
+                    <span class="telemetry-label mb-0 input-trace-label">Brake</span>
+                    <div class="flex-grow-1">
+                        <div class="bar-track">
+                            <div class="bar-fill bar-brake" id="it-brake-bar" style="width:0%"></div>
+                        </div>
+                    </div>
+                    <small class="text-secondary" id="it-brake-val" style="min-width:36px;text-align:right">0%</small>
+                </div>
+                <div class="d-flex align-items-center gap-2 mb-2">
+                    <span class="telemetry-label mb-0 input-trace-label">Clutch</span>
+                    <div class="flex-grow-1">
+                        <div class="bar-track">
+                            <div class="bar-fill bar-clutch" id="it-clutch-bar" style="width:0%"></div>
+                        </div>
+                    </div>
+                    <small class="text-secondary" id="it-clutch-val" style="min-width:36px;text-align:right">0%</small>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <span class="telemetry-label mb-0 input-trace-label">Steering</span>
+                    <div class="flex-grow-1 position-relative" style="height:14px">
+                        <div class="bar-track" style="height:100%;border-radius:7px;overflow:hidden;position:relative">
+                            <div id="it-steer-bar" style="position:absolute;top:0;height:100%;background:#888;transition:left 0.1s ease,width 0.1s ease;border-radius:7px"></div>
+                            <div style="position:absolute;left:50%;top:0;height:100%;width:1px;background:rgba(255,255,255,0.35);transform:translateX(-50%)"></div>
+                        </div>
+                    </div>
+                    <small class="text-secondary" id="it-steer-val" style="min-width:36px;text-align:right">0%</small>
+                </div>
+            </div>
+
+            <!-- Graph mode -->
+            <div id="input-graph" style="display:none">
+                <canvas id="input-canvas" style="width:100%;height:120px;display:block"></canvas>
+                <div class="d-flex gap-3 justify-content-center mt-2">
+                    <small style="color:#00ff87">&#9632; Throttle</small>
+                    <small style="color:#ff4757">&#9632; Brake</small>
+                    <small style="color:#4d9fec">&#9632; Clutch</small>
+                    <small style="color:#999">&#9632; Steering</small>
+                </div>
+            </div>
+        </div>
+
     </div><!-- end wheel-panel -->
 </div>
 
+<script src="/static/scripts/input-trace.js"></script>
 <script src="/static/scripts/telemetry.js"></script>
 {% endblock %}

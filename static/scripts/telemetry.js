@@ -168,6 +168,10 @@ function render(data) {
     document.getElementById('t-brake-bar').style.width     = brakePct + '%';
     document.getElementById('t-brake-val').textContent     = brakePct + '%';
 
+    // Input trace panel (normalize clutch: F1 sends 0-100, LMU sends 0.0-1.0)
+    const clutchNorm = isF1 ? (t.clutch || 0) / 100 : (t.clutch || 0);
+    inputTrace.update(t.throttle || 0, t.brake || 0, clutchNorm, t.steer || 0);
+
     // Lap times
     if (isF1) {
         document.getElementById('t-cur-lap').textContent  = fmtMs(lap.current_lap_time);

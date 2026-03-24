@@ -5,8 +5,9 @@ import json
 import os
 import threading
 import time
+
 from cs50 import SQL
-from flask import Flask, Response, flash, jsonify, redirect, render_template, request, session, stream_with_context
+from flask import Flask, Response, jsonify, redirect, render_template, request, session, stream_with_context
 from flask_session import Session
 from werkzeug.security import check_password_hash, generate_password_hash
 from helpers import apology, login_required
