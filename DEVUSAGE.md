@@ -242,6 +242,26 @@ The panel is driven by `static/scripts/input-trace.js`, which exposes a single f
 
 ---
 
+## Ports reference
+
+SimStrategist uses exactly **three ports**. Only two require any network/firewall configuration.
+
+| Port | Protocol | Direction | Purpose | Configurable? |
+| ---- | -------- | --------- | ------- | ------------- |
+| **20777** | UDP | Game → app | F1 telemetry stream | Fixed — set in the F1 game's UDP settings |
+| **5100** | TCP | LMU plugin → app | Le Mans Ultimate telemetry stream | Fixed — set in the LMU community plugin |
+| **5051** | HTTP | Browser → app | Flask web dashboard | Yes — override with `PORT=xxxx python3 app.py` |
+
+**What you need to configure:**
+
+- **F1**: in-game go to *Settings → Telemetry Settings*, set IP to your machine's IP and port to `20777`.
+- **LMU**: configure the telemetry plugin to connect to your machine's IP on port `5100`.
+- **Firewall**: open UDP `20777` and TCP `5100` inbound on the machine running the app. Port `5051` only needs to be reachable from your browser (localhost is fine if running locally).
+
+**VS Code users**: the Ports panel in VS Code will show additional ports (e.g. 17415, 38000, and other high-numbered ports). These are VS Code's own internal processes (extension host, language servers, debugger) and are unrelated to SimStrategist. You can ignore them.
+
+---
+
 ## Common issues
 
 | Problem | Likely cause |
