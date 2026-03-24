@@ -12,7 +12,7 @@ import struct
 import threading
 import time
 import logging
-from telemetry_state import state
+from f1.telemetry_state import state
 
 # Recording constants (shared with recorder.py / replayer.py)
 _REC_MAGIC = b'F1REC\x00'
