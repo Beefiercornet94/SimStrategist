@@ -11,8 +11,6 @@ relative to the standard strategy (negative = faster, positive = slower).
 import json
 import os
 
-import openai
-
 from strategy.weather_history import weather_history, WEATHER_DESC
 
 # ── Compound look-up tables ────────────────────────────────────────────────────

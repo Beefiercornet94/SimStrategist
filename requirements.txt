@@ -1,8 +1,8 @@
-flask
-flask_session
 cs50
-requests
+flask
+flask-session
 werkzeug
-openai
+requests
 numpy
 pandas
+openai
