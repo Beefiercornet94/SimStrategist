@@ -9,8 +9,6 @@ import time
 from cs50 import SQL
 from flask import Flask, Response, jsonify, redirect, render_template, request, session, stream_with_context
 from flask_session import Session
-from werkzeug.security import check_password_hash, generate_password_hash
-from helpers import apology, login_required
 
 from f1.server import UdpListener
 from f1.telemetry_state import state as f1_state
@@ -199,10 +197,9 @@ def strategy():
 
 #---------- SETTINGS / SETUP ----------#
 
-@app.route("/setup", methods=["GET", "POST"])
-@login_required
+@app.route("/setup")
 def setup():
-        return render_template("setup.html")
+    return render_template("setup.html")
 
 
 if __name__ == "__main__":

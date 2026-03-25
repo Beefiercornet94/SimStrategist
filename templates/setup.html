@@ -1,13 +1,13 @@
 {% extends "layout.html" %}
 
-{% block title %}Account Setup{% endblock %}
+{% block title %}Setup{% endblock %}
 
 {% block body %}
-<div class="container py-5" style="max-width: 480px;">
+<div class="container py-5" style="max-width: 560px;">
 
     <div class="text-center mb-4">
-        <h2 class="fw-bold" style="color: var(--text-primary);">Account</h2>
-        <p class="text-secondary">Manage your SimStrategist account</p>
+        <h2 class="fw-bold" style="color: var(--text-primary);">Setup</h2>
+        <p class="text-secondary">Display preferences and connection instructions</p>
     </div>
 
     <!-- Display settings -->
@@ -15,10 +15,29 @@
         <p class="telemetry-section-title mb-3">Display Settings</p>
 
         <!-- Dark / Light mode -->
-        <div class="d-flex align-items-center justify-content-between mb-3">
-            <span style="color: var(--text-primary);">Light Mode</span>
-            <div class="form-check form-switch mb-0">
-                <input class="form-check-input" type="checkbox" id="theme-toggle" role="switch">
+        <div class="mb-3">
+            <span class="telemetry-label d-block mb-2">Theme</span>
+            <div class="d-flex gap-3">
+                <div class="theme-option flex-fill" id="theme-dark" data-theme="dark">
+                    <div class="theme-preview theme-preview-dark mb-2">
+                        <div class="tp-bar"></div>
+                        <div class="tp-card">
+                            <div class="tp-line tp-line-short"></div>
+                            <div class="tp-line"></div>
+                        </div>
+                    </div>
+                    <div class="theme-option-label">Dark</div>
+                </div>
+                <div class="theme-option flex-fill" id="theme-light" data-theme="light">
+                    <div class="theme-preview theme-preview-light mb-2">
+                        <div class="tp-bar"></div>
+                        <div class="tp-card">
+                            <div class="tp-line tp-line-short"></div>
+                            <div class="tp-line"></div>
+                        </div>
+                    </div>
+                    <div class="theme-option-label">Light</div>
+                </div>
             </div>
         </div>
 
@@ -33,47 +52,55 @@
         </div>
     </div>
 
-    <!-- Logged-in panel -->
-    <div class="dash-card mb-4">
-        <p class="telemetry-section-title mb-3">Session</p>
-        <p class="text-secondary mb-3">You are currently logged in.</p>
-        <a href="/logout" class="btn btn-outline-danger w-100">Log Out</a>
-    </div>
-
-    <!-- Register a new account -->
-    <div class="dash-card mb-4">
-        <p class="telemetry-section-title mb-3">Register a New Account</p>
-        <form action="/register" method="post">
-            <div class="mb-3">
-                <input class="form-control bg-dark text-white border-secondary"
-                       autocomplete="off" name="username" placeholder="Username" type="text" required>
-            </div>
-            <div class="mb-3">
-                <input class="form-control bg-dark text-white border-secondary"
-                       name="password" placeholder="Password" type="password" required>
-            </div>
-            <div class="mb-3">
-                <input class="form-control bg-dark text-white border-secondary"
-                       name="confirmation" placeholder="Confirm Password" type="password" required>
-            </div>
-            <button type="submit" class="btn btn-outline-light w-100">Register</button>
-        </form>
-    </div>
-
-    <!-- Switch account / log in as a different user -->
+    <!-- Simulator connection instructions -->
     <div class="dash-card">
-        <p class="telemetry-section-title mb-3">Log In as a Different User</p>
-        <form action="/login" method="post">
-            <div class="mb-3">
-                <input class="form-control bg-dark text-white border-secondary"
-                       autocomplete="off" name="username" placeholder="Username" type="text" required>
+        <div class="d-flex align-items-center justify-content-between mb-3">
+            <p class="telemetry-section-title mb-0">How to Connect</p>
+            <div class="btn-group btn-group-sm" role="group" id="sim-toggle">
+                <button type="button" class="btn btn-primary active" data-sim="f1">F1</button>
+                <button type="button" class="btn btn-outline-primary" data-sim="lmu">Le Mans Ultimate</button>
             </div>
-            <div class="mb-3">
-                <input class="form-control bg-dark text-white border-secondary"
-                       name="password" placeholder="Password" type="password" required>
+        </div>
+
+        <!-- F1 instructions -->
+        <div id="instructions-f1">
+            <p class="text-secondary mb-3" style="font-size:.9rem;">F1 games broadcast telemetry over UDP. Follow these steps:</p>
+            <ol class="ps-3" style="color: var(--text-primary); line-height: 2; font-size:.9rem;">
+                <li>In the F1 game, go to <strong>Settings → Telemetry Settings</strong>.</li>
+                <li>Set <strong>UDP Telemetry</strong> to <code>On</code>.</li>
+                <li>Set <strong>UDP Broadcast Mode</strong> to <code>Off</code>.</li>
+                <li>Set <strong>UDP IP Address</strong> to the IP of the machine running SimStrategist
+                    (use <code>127.0.0.1</code> if on the same PC).</li>
+                <li>Set <strong>UDP Port</strong> to <code>20777</code>.</li>
+                <li>Set <strong>UDP Send Rate</strong> to <code>20Hz</code> (recommended).</li>
+                <li>Set <strong>UDP Format</strong> to match your game year (e.g. <code>2023</code>).</li>
+                <li>Run the telemetry listener:
+                    <code class="d-block mt-1 p-2 rounded" style="background: var(--bar-track);">python3 f1/server.py</code>
+                </li>
+            </ol>
+            <div class="alert alert-secondary border-secondary mt-3 mb-0 py-2" style="font-size:.82rem;">
+                The listener receives data on <strong>UDP port 20777</strong>. Make sure your firewall allows this port if the game runs on a different machine.
             </div>
-            <button type="submit" class="btn btn-outline-light w-100">Log In</button>
-        </form>
+        </div>
+
+        <!-- LMU instructions -->
+        <div id="instructions-lmu" style="display:none;">
+            <p class="text-secondary mb-3" style="font-size:.9rem;">Le Mans Ultimate uses the <em>JSON Telemetry Plugin</em>. Follow these steps:</p>
+            <ol class="ps-3" style="color: var(--text-primary); line-height: 2; font-size:.9rem;">
+                <li>Download and install the <strong>Ultimate Telemetry Socket – JSON Telemetry Plugin</strong> from the Le Mans Ultimate community forums.</li>
+                <li>Place the plugin DLL in your LMU <code>Plugins</code> folder.</li>
+                <li>In the plugin configuration file, set the output host to <code>127.0.0.1</code> and port to <code>5100</code>.</li>
+                <li>Start Le Mans Ultimate — the plugin will begin sending telemetry automatically.</li>
+                <li>Run the LMU listener:
+                    <code class="d-block mt-1 p-2 rounded" style="background: var(--bar-track);">python3 lmu/server.py</code>
+                </li>
+            </ol>
+            <div class="alert alert-secondary border-secondary mt-3 mb-0 py-2" style="font-size:.82rem;">
+                The listener accepts connections on <strong>TCP port 5100</strong> by default.
+                To use UDP instead, run <code>python3 lmu/server.py --udp</code>.
+                To change the port, add <code>--port &lt;number&gt;</code>.
+            </div>
+        </div>
     </div>
 
 </div>
