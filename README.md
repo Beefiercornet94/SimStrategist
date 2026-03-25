@@ -12,7 +12,6 @@ SimStrategist is a tool that displays and analyses live in-game telemetry from v
 | Gen 4 | F1 2021 | All |
 | Gen 3 | F1 2020 | All |
 | Gen 2 | F1 2018, F1 2019 | All |
-| ~~Gen 1~~ | ~~F1 2017~~ | — Not supported |
 | — | Le Mans Ultimate | PC |
 
 ## Features
