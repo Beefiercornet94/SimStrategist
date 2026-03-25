@@ -97,6 +97,85 @@ def index():
     return render_template("index.html")
 
 
+#---------- F1 SCHEDULE ----------#
+
+import datetime
+
+_F1_2025_SCHEDULE = [
+    {"round": 1, "grandPrix": "Australian Grand Prix", "circuit": "Albert Park Grand Prix Circuit", "country": "Australia", "sessions": {"practice1": "2025-03-14T01:30:00Z", "practice2": "2025-03-14T05:00:00Z", "practice3": "2025-03-15T01:30:00Z", "qualifying": "2025-03-15T05:00:00Z", "race": "2025-03-16T04:00:00Z"}},
+    {"round": 2, "grandPrix": "Chinese Grand Prix", "circuit": "Shanghai International Circuit", "country": "China", "sessions": {"practice1": "2025-03-21T03:30:00Z", "sprintQualifying": "2025-03-21T07:30:00Z", "sprintRace": "2025-03-22T03:00:00Z", "qualifying": "2025-03-22T07:00:00Z", "race": "2025-03-23T07:00:00Z"}},
+    {"round": 3, "grandPrix": "Japanese Grand Prix", "circuit": "Suzuka Circuit", "country": "Japan", "sessions": {"practice1": "2025-04-04T02:30:00Z", "practice2": "2025-04-04T06:00:00Z", "practice3": "2025-04-05T02:30:00Z", "qualifying": "2025-04-05T06:00:00Z", "race": "2025-04-06T05:00:00Z"}},
+    {"round": 4, "grandPrix": "Bahrain Grand Prix", "circuit": "Bahrain International Circuit", "country": "Bahrain", "sessions": {"practice1": "2025-04-11T11:30:00Z", "practice2": "2025-04-11T15:00:00Z", "practice3": "2025-04-12T12:30:00Z", "qualifying": "2025-04-12T16:00:00Z", "race": "2025-04-13T15:00:00Z"}},
+    {"round": 5, "grandPrix": "Saudi Arabian Grand Prix", "circuit": "Jeddah Corniche Circuit", "country": "Saudi Arabia", "sessions": {"practice1": "2025-04-18T13:30:00Z", "practice2": "2025-04-18T17:00:00Z", "practice3": "2025-04-19T13:30:00Z", "qualifying": "2025-04-19T17:00:00Z", "race": "2025-04-20T17:00:00Z"}},
+    {"round": 6, "grandPrix": "Miami Grand Prix", "circuit": "Miami International Autodrome", "country": "United States", "sessions": {"practice1": "2025-05-02T16:30:00Z", "sprintQualifying": "2025-05-02T20:30:00Z", "sprintRace": "2025-05-03T16:00:00Z", "qualifying": "2025-05-03T20:00:00Z", "race": "2025-05-04T20:00:00Z"}},
+    {"round": 7, "grandPrix": "Emilia Romagna Grand Prix", "circuit": "Autodromo Enzo e Dino Ferrari", "country": "Italy", "sessions": {"practice1": "2025-05-16T11:30:00Z", "practice2": "2025-05-16T15:00:00Z", "practice3": "2025-05-17T10:30:00Z", "qualifying": "2025-05-17T14:00:00Z", "race": "2025-05-18T13:00:00Z"}},
+    {"round": 8, "grandPrix": "Monaco Grand Prix", "circuit": "Circuit de Monaco", "country": "Monaco", "sessions": {"practice1": "2025-05-23T11:30:00Z", "practice2": "2025-05-23T15:00:00Z", "practice3": "2025-05-24T10:30:00Z", "qualifying": "2025-05-24T14:00:00Z", "race": "2025-05-25T13:00:00Z"}},
+    {"round": 9, "grandPrix": "Spanish Grand Prix", "circuit": "Circuit de Barcelona-Catalunya", "country": "Spain", "sessions": {"practice1": "2025-05-30T11:30:00Z", "practice2": "2025-05-30T15:00:00Z", "practice3": "2025-05-31T10:30:00Z", "qualifying": "2025-05-31T14:00:00Z", "race": "2025-06-01T13:00:00Z"}},
+    {"round": 10, "grandPrix": "Canadian Grand Prix", "circuit": "Circuit Gilles Villeneuve", "country": "Canada", "sessions": {"practice1": "2025-06-13T17:30:00Z", "practice2": "2025-06-13T21:00:00Z", "practice3": "2025-06-14T16:30:00Z", "qualifying": "2025-06-14T20:00:00Z", "race": "2025-06-15T18:00:00Z"}},
+    {"round": 11, "grandPrix": "Austrian Grand Prix", "circuit": "Red Bull Ring", "country": "Austria", "sessions": {"practice1": "2025-06-27T11:30:00Z", "practice2": "2025-06-27T15:00:00Z", "practice3": "2025-06-28T10:30:00Z", "qualifying": "2025-06-28T14:00:00Z", "race": "2025-06-29T13:00:00Z"}},
+    {"round": 12, "grandPrix": "British Grand Prix", "circuit": "Silverstone Circuit", "country": "United Kingdom", "sessions": {"practice1": "2025-07-04T11:30:00Z", "practice2": "2025-07-04T15:00:00Z", "practice3": "2025-07-05T10:30:00Z", "qualifying": "2025-07-05T14:00:00Z", "race": "2025-07-06T14:00:00Z"}},
+    {"round": 13, "grandPrix": "Belgian Grand Prix", "circuit": "Circuit de Spa-Francorchamps", "country": "Belgium", "sessions": {"practice1": "2025-07-25T10:30:00Z", "sprintQualifying": "2025-07-25T14:30:00Z", "sprintRace": "2025-07-26T10:00:00Z", "qualifying": "2025-07-26T14:00:00Z", "race": "2025-07-27T13:00:00Z"}},
+    {"round": 14, "grandPrix": "Hungarian Grand Prix", "circuit": "Hungaroring", "country": "Hungary", "sessions": {"practice1": "2025-08-01T11:30:00Z", "practice2": "2025-08-01T15:00:00Z", "practice3": "2025-08-02T10:30:00Z", "qualifying": "2025-08-02T14:00:00Z", "race": "2025-08-03T13:00:00Z"}},
+    {"round": 15, "grandPrix": "Dutch Grand Prix", "circuit": "Circuit Park Zandvoort", "country": "Netherlands", "sessions": {"practice1": "2025-08-29T10:30:00Z", "practice2": "2025-08-29T14:00:00Z", "practice3": "2025-08-30T09:30:00Z", "qualifying": "2025-08-30T13:00:00Z", "race": "2025-08-31T13:00:00Z"}},
+    {"round": 16, "grandPrix": "Italian Grand Prix", "circuit": "Autodromo Nazionale di Monza", "country": "Italy", "sessions": {"practice1": "2025-09-05T11:30:00Z", "practice2": "2025-09-05T15:00:00Z", "practice3": "2025-09-06T10:30:00Z", "qualifying": "2025-09-06T14:00:00Z", "race": "2025-09-07T13:00:00Z"}},
+    {"round": 17, "grandPrix": "Azerbaijan Grand Prix", "circuit": "Baku City Circuit", "country": "Azerbaijan", "sessions": {"practice1": "2025-09-19T08:30:00Z", "practice2": "2025-09-19T12:00:00Z", "practice3": "2025-09-20T08:30:00Z", "qualifying": "2025-09-20T12:00:00Z", "race": "2025-09-21T11:00:00Z"}},
+    {"round": 18, "grandPrix": "Singapore Grand Prix", "circuit": "Marina Bay Street Circuit", "country": "Singapore", "sessions": {"practice1": "2025-10-03T09:30:00Z", "practice2": "2025-10-03T13:00:00Z", "practice3": "2025-10-04T09:30:00Z", "qualifying": "2025-10-04T13:00:00Z", "race": "2025-10-05T12:00:00Z"}},
+    {"round": 19, "grandPrix": "United States Grand Prix", "circuit": "Circuit of the Americas", "country": "United States", "sessions": {"practice1": "2025-10-17T17:30:00Z", "sprintQualifying": "2025-10-17T21:30:00Z", "sprintRace": "2025-10-18T17:00:00Z", "qualifying": "2025-10-18T21:00:00Z", "race": "2025-10-19T19:00:00Z"}},
+    {"round": 20, "grandPrix": "Mexico City Grand Prix", "circuit": "Autódromo Hermanos Rodríguez", "country": "Mexico", "sessions": {"practice1": "2025-10-24T18:30:00Z", "practice2": "2025-10-24T22:00:00Z", "practice3": "2025-10-25T17:30:00Z", "qualifying": "2025-10-25T21:00:00Z", "race": "2025-10-26T20:00:00Z"}},
+    {"round": 21, "grandPrix": "São Paulo Grand Prix", "circuit": "Autódromo José Carlos Pace", "country": "Brazil", "sessions": {"practice1": "2025-11-07T14:30:00Z", "sprintQualifying": "2025-11-07T18:30:00Z", "sprintRace": "2025-11-08T14:00:00Z", "qualifying": "2025-11-08T18:00:00Z", "race": "2025-11-09T17:00:00Z"}},
+    {"round": 22, "grandPrix": "Las Vegas Grand Prix", "circuit": "Las Vegas Strip Street Circuit", "country": "United States", "sessions": {"practice1": "2025-11-21T00:30:00Z", "practice2": "2025-11-21T04:00:00Z", "practice3": "2025-11-22T00:30:00Z", "qualifying": "2025-11-22T04:00:00Z", "race": "2025-11-23T04:00:00Z"}},
+    {"round": 23, "grandPrix": "Qatar Grand Prix", "circuit": "Losail International Circuit", "country": "Qatar", "sessions": {"practice1": "2025-11-28T13:30:00Z", "sprintQualifying": "2025-11-28T17:30:00Z", "sprintRace": "2025-11-29T14:00:00Z", "qualifying": "2025-11-29T18:00:00Z", "race": "2025-11-30T16:00:00Z"}},
+    {"round": 24, "grandPrix": "Abu Dhabi Grand Prix", "circuit": "Yas Marina Circuit", "country": "United Arab Emirates", "sessions": {"practice1": "2025-12-05T09:30:00Z", "practice2": "2025-12-05T13:00:00Z", "practice3": "2025-12-06T10:30:00Z", "qualifying": "2025-12-06T14:00:00Z", "race": "2025-12-07T13:00:00Z"}},
+]
+
+_SESSION_LABELS = {
+    "practice1": "Practice 1",
+    "practice2": "Practice 2",
+    "practice3": "Practice 3",
+    "sprintQualifying": "Sprint Qualifying",
+    "sprintRace": "Sprint Race",
+    "qualifying": "Qualifying",
+    "race": "Race",
+}
+
+# Canonical session order within a weekend
+_SESSION_ORDER = ["practice1", "practice2", "sprintQualifying", "practice3", "sprintRace", "qualifying", "race"]
+
+@app.route("/api/f1/next-session")
+def api_f1_next_session():
+    now = datetime.datetime.now(datetime.timezone.utc)
+    best = None
+    for event in _F1_2025_SCHEDULE:
+        for key in _SESSION_ORDER:
+            iso = event["sessions"].get(key)
+            if not iso:
+                continue
+            t = datetime.datetime.fromisoformat(iso.replace("Z", "+00:00"))
+            if t > now:
+                if best is None or t < best["time"]:
+                    best = {
+                        "time": t,
+                        "isoTime": iso,
+                        "session": _SESSION_LABELS[key],
+                        "grandPrix": event["grandPrix"],
+                        "circuit": event["circuit"],
+                        "country": event["country"],
+                        "round": event["round"],
+                    }
+                break  # only care about the next session within this event
+    if best is None:
+        return jsonify({"none": True})
+    return jsonify({
+        "none": False,
+        "isoTime": best["isoTime"],
+        "session": best["session"],
+        "grandPrix": best["grandPrix"],
+        "circuit": best["circuit"],
+        "country": best["country"],
+        "round": best["round"],
+    })
+
+
 
 #---------- TELEMETRY / STRATEGY ----------#
 

@@ -9,6 +9,40 @@
         <p class="lead text-secondary">Live telemetry monitoring and race strategy for your simulator</p>
     </div>
 
+    <!-- F1 Next Session Countdown -->
+    <div id="f1-countdown" class="dash-card text-center p-4 mb-5 mx-auto" style="max-width:600px; display:none;">
+        <div class="mb-1">
+            <span id="cd-round" class="badge bg-danger text-white mb-2" style="font-size:0.75rem; letter-spacing:0.05em;"></span>
+        </div>
+        <h4 id="cd-gp-name" class="text-white fw-bold mb-0"></h4>
+        <p id="cd-circuit" class="text-secondary small mb-1"></p>
+        <p class="text-danger fw-semibold mb-3" id="cd-session-name" style="font-size:1rem; letter-spacing:0.08em; text-transform:uppercase;"></p>
+
+        <div class="d-flex justify-content-center gap-3 mb-3">
+            <div class="text-center">
+                <div id="cd-days" class="display-5 fw-bold text-white" style="font-variant-numeric:tabular-nums; min-width:2.5ch;">00</div>
+                <div class="text-secondary small">DAYS</div>
+            </div>
+            <div class="text-white display-5 fw-bold align-self-start mt-1">:</div>
+            <div class="text-center">
+                <div id="cd-hours" class="display-5 fw-bold text-white" style="font-variant-numeric:tabular-nums; min-width:2.5ch;">00</div>
+                <div class="text-secondary small">HRS</div>
+            </div>
+            <div class="text-white display-5 fw-bold align-self-start mt-1">:</div>
+            <div class="text-center">
+                <div id="cd-minutes" class="display-5 fw-bold text-white" style="font-variant-numeric:tabular-nums; min-width:2.5ch;">00</div>
+                <div class="text-secondary small">MIN</div>
+            </div>
+            <div class="text-white display-5 fw-bold align-self-start mt-1">:</div>
+            <div class="text-center">
+                <div id="cd-seconds" class="display-5 fw-bold text-danger" style="font-variant-numeric:tabular-nums; min-width:2.5ch;">00</div>
+                <div class="text-secondary small">SEC</div>
+            </div>
+        </div>
+
+        <p id="cd-local-time" class="text-secondary small mb-0"></p>
+    </div>
+
     <div class="row g-4 justify-content-center">
         <div class="col-md-5">
             <div class="dash-card h-100 text-center p-4">
@@ -28,4 +62,6 @@
         </div>
     </div>
 </div>
+
+<script src="/static/scripts/f1-countdown.js"></script>
 {% endblock %}
