@@ -95,20 +95,14 @@ The app should be automatically opened in a new tab
 - Parsing code for the F1 games taken from Harmitx7's F1-TELEMETRY-Dashboard at "github.com/Harmitx7/F1-TELEMETRY-DASHBOARD"
 - JSON Module for LMU taken from the community forums at "community.lemansultimate.com/index.php?threads/telemetry-socket-%E2%80%93-json-telemetry-plugin.8229/"
 
-### From various CS50 problem sets
-
-- `Login` flask route
-- `login.html`
-- `Logout` flask route
-- `Register` flask route
-- `register.html`
-- `apology.html`
-- `apology()` function
-
- (CSS / JavaScript added/removed for aesthetic purposes)
-
 ## About me
 
 This is my first GitHub publication, so apologies for any badly-written code and/or unhelpful comments!
 
 Claude AI module inside Visual Studio Code used.
+
+## Features in development
+
+- Forza Horizon Compatibility
+- F1 Race Countdown Timers
+- F1 Race Replay (using FastF1)
