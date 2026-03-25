@@ -2,7 +2,7 @@
 
 ## What is this?
 
-SimStrategist is a Flask web app that displays and analyses live in-game telemetry from racing simulators. It supports **F1 2018–2024** (Gen 2–5, via binary UDP packets), with the game version auto-detected per packet. It also has placeholder support for **Le Mans Ultimate** (LMU, via JSON over TCP/UDP). F1 2017 (Gen 1 legacy format) is not supported.
+SimStrategist is a Flask web app that displays and analyses live in-game telemetry from racing simulators. It supports **F1 2018–2024** (Gen 2–5, via binary UDP packets), **Le Mans Ultimate** (LMU, via JSON over TCP/UDP), and **Forza Horizon 4/5** (binary UDP, game version auto-detected from packet size). F1 2017 (Gen 1 legacy format) and Forza Horizon 3 are not supported.
 
 A Claude-powered AI strategy analyser is built in, using real-time weather and tyre data to recommend pit strategies. The live telemetry dashboard also includes a **Driver Inputs** panel showing throttle, brake, clutch, and steering — switchable between a bar view and a scrolling graph.
 
@@ -22,7 +22,13 @@ LMU game ──TCP:5100──▶ lmu/server.py ──▶ lmu/telemetry_state.py 
                         (JSON parse)       (thread-safe singleton)
 ```
 
-Both listeners run as **daemon threads inside `app.py`** — you only need to start one process. However, `f1/server.py` can also be run standalone (useful when recording).
+```text
+Forza Horizon ──UDP:20055──▶ forza_hrzn/server.py ──▶ forza_hrzn/telemetry_state.py ──▶ app.py API routes ──▶ browser
+  (FH4: 20044)               (binary parse,             (thread-safe singleton)
+                              size-based version detect)
+```
+
+All listeners run as **daemon threads inside `app.py`** — you only need to start one process. However, `f1/server.py` can also be run standalone (useful when recording).
 
 ### Key files
 
@@ -37,6 +43,9 @@ Both listeners run as **daemon threads inside `app.py`** — you only need to st
 | `strategy/ai_strategy.py` | Calls Claude API to generate 3 race strategies |
 | `strategy/weather_history.py` | Records weather samples every 10 s during a session |
 | `lmu/server.py` | JSON-over-TCP/UDP listener for Le Mans Ultimate |
+| `forza_hrzn/server.py` | Binary UDP listener for Forza Horizon 4/5; detects game from packet size |
+| `forza_hrzn/telemetry_state.py` | Thread-safe singleton with numpy circular buffers (mirrors F1 interface) |
+| `forza_hrzn/config.py` | UDP ports (FH4: 20044, FH5: 20055), buffer sizes, version map |
 | `static/scripts/input-trace.js` | Driver Inputs panel — bar and graph rendering for throttle, brake, clutch, steering |
 
 ---
@@ -85,7 +94,7 @@ Open [http://localhost:5051](http://localhost:5051). Register an account, then g
 | Method | Path | Description |
 | ------ | ---- | ----------- |
 | `GET` | `/api/telemetry` | Single JSON snapshot of current state |
-| `GET` | `/api/telemetry/stream?game=f1\|lmu` | Server-Sent Events stream (~60 Hz) |
+| `GET` | `/api/telemetry/stream?game=f1\|lmu\|forza_hrzn` | Server-Sent Events stream (~60 Hz) |
 | `GET` | `/api/weather/history?game=f1\|lmu` | Weather history list for this session |
 | `POST` | `/api/strategy/ai` | Trigger AI strategy analysis (body: `{"game":"f1"}`) |
 
@@ -196,7 +205,15 @@ The replayer sends packets to the local UDP port, so the app processes them exac
 5. **`app.py`** exposes `/api/telemetry/stream` as a **Server-Sent Events** endpoint. It polls `state.last_update_time` every 16 ms and pushes a JSON snapshot whenever new data arrives.
 6. The browser receives SSE events and updates the live dashboard without polling.
 
-### Game version detection
+### Forza Horizon telemetry flow
+
+1. **Forza Horizon** broadcasts a binary UDP datagram at ~60 Hz to the configured IP and port.
+2. **`UdpListener`** (`forza_hrzn/server.py`) receives each datagram and checks its length against `VERSION_BY_SIZE` (`{324: 'fh4', 323: 'fh5'}`). Packets of any other size are silently skipped.
+3. The 311-byte Sled + Dash struct is unpacked with `struct.unpack_from`. Speed (m/s) is multiplied by 3.6 for km/h; Accel/Brake/Clutch (uint8 0–255) are divided by 255; Steer (int8 −127–127) is divided by 127.
+4. The parsed dict is passed to `state.update()` in **`TelemetryState`** (`forza_hrzn/telemetry_state.py`), which stores the latest values and writes to a numpy circular buffer (7200 points = 120 s at 60 Hz).
+5. `app.py` streams snapshots via SSE at `/api/telemetry/stream?game=forza_hrzn`.
+
+### F1 game version detection
 
 The server auto-detects the F1 game generation from the `packet_format` field (first 2 bytes of every packet, equal to the game year). No manual configuration is needed.
 
@@ -262,13 +279,16 @@ SimStrategist uses exactly **three ports**. Only two require any network/firewal
 | ---- | -------- | --------- | ------- | ------------- |
 | **20777** | UDP | Game → app | F1 telemetry stream | Fixed — set in the F1 game's UDP settings |
 | **5100** | TCP | LMU plugin → app | Le Mans Ultimate telemetry stream | Fixed — set in the LMU community plugin |
+| **20055** | UDP | Game → app | Forza Horizon 5 telemetry stream | Default; override with `FORZA_HRZN_PORT=xxxx` |
+| **20044** | UDP | Game → app | Forza Horizon 4 telemetry stream | Default for FH4; use `FORZA_HRZN_PORT=20044` |
 | **5051** | HTTP | Browser → app | Flask web dashboard | Yes — override with `PORT=xxxx python3 app.py` |
 
 **What you need to configure:**
 
 - **F1**: in-game go to *Settings → Telemetry Settings*, set IP to your machine's IP and port to `20777`.
 - **LMU**: configure the telemetry plugin to connect to your machine's IP on port `5100`.
-- **Firewall**: open UDP `20777` and TCP `5100` inbound on the machine running the app. Port `5051` only needs to be reachable from your browser (localhost is fine if running locally).
+- **Forza Horizon**: in-game go to *Settings → Gameplay & HUD → UDP Race Telemetry*, set the IP to your machine's IP and port to `20055` (FH5) or `20044` (FH4).
+- **Firewall**: open UDP `20777`, `20055`/`20044`, and TCP `5100` inbound on the machine running the app.
 
 **VS Code users**: the Ports panel in VS Code will show additional ports (e.g. 17415, 38000, and other high-numbered ports). These are VS Code's own internal processes (extension host, language servers, debugger) and are unrelated to SimStrategist. You can ignore them.
 
@@ -283,3 +303,4 @@ SimStrategist uses exactly **three ports**. Only two require any network/firewal
 | AI strategy returns error | `ANTHROPIC_API_KEY` not set or invalid |
 | Replay has no effect on dashboard | App not running, or replaying to wrong port |
 | Recording stops mid-session | Disk full, or `Ctrl+C` — recordings flush on clean exit |
+| Forza shows "Disconnected" | Wrong port in-game, or packet size doesn't match FH4/FH5 (check game title) |

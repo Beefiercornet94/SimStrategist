@@ -13,6 +13,8 @@ SimStrategist is a tool that displays and analyses live in-game telemetry from v
 | Gen 3 | F1 2020 | All |
 | Gen 2 | F1 2018, F1 2019 | All |
 | — | Le Mans Ultimate | PC |
+| - | Forza Horizon 5 | All |
+| - | Forza Horizon 4 | All |
 
 ## Features
 
@@ -80,6 +82,28 @@ python3 lmu/server.py
 
 ---
 
+### Connecting a Forza Horizon Game
+
+SimStrategist detects FH4 vs FH5 automatically from the packet size — no manual version configuration is needed.
+
+1. In the Forza Horizon game, go to **Settings → Gameplay & HUD → UDP Race Telemetry**.
+2. Set **Data Out** to `On`.
+3. Set **Data Out IP Address** to the IP of the machine running SimStrategist:
+    - Use `127.0.0.1` if running on the same PC.
+    - Use the machine's local IP address if running SimStrategist on a separate device.
+4. Set **Data Out IP Port** to the default for your game:
+
+| Game | Default Port |
+| --- | --- |
+| Forza Horizon 5 | `20055` |
+| Forza Horizon 4 | `20044` |
+
+1. In the SimStrategist web app, use the **game dropdown** to select your Forza Horizon title.
+
+> The listener starts automatically with `python3 app.py` on the default FH5 port (`20055`). If you are using FH4, or need a different port, set `FORZA_HRZN_PORT=20044` before starting the app. Forza Horizon 3 has no UDP telemetry output and is not supported.
+
+---
+
 ### Starting the Web App
 
 ```bash
@@ -103,6 +127,5 @@ Claude AI module inside Visual Studio Code used.
 
 ## Features in development
 
-- Forza Horizon Compatibility
 - F1 Race Countdown Timers
 - F1 Race Replay (using FastF1)
