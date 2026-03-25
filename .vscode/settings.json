@@ -3,5 +3,15 @@
     "python.analysis.extraPaths": ["/workspaces/SimStrategist"],
     "python.analysis.typeCheckingMode": "off",
     "python.analysis.autoImportCompletions": true,
-    "python-envs.defaultEnvManager": "ms-python.python:system"
+    "python-envs.defaultEnvManager": "ms-python.python:system",
+    "remote.portsAttributes": {
+        "5051": {
+            "label": "SimStrategist",
+            "onAutoForward": "openBrowser"
+        },
+        "5100": {
+            "label": "LMU Telemetry (internal)",
+            "onAutoForward": "ignore"
+        }
+    }
 }

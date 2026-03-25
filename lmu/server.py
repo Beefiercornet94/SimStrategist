@@ -146,7 +146,7 @@ def _parse_and_dispatch(raw: bytes) -> None:
                      state.telemetry.get('rpm', 0),
                      state.telemetry.get('gear', 0))
     except json.JSONDecodeError as exc:
-        logger.warning("JSON parse error: %s | raw=%r", exc, text[:120])
+        logger.debug("JSON parse error: %s | raw=%r", exc, text[:120])
 
 
 # ---------------------------------------------------------------------------
