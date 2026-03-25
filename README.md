@@ -6,8 +6,10 @@ SimStrategist is a tool that displays and analyses live in-game telemetry from v
 
 ### Compatible Simulators
 
-- F1 (2022 / 2023 / 2024)
-- Le Mans Ultimate
+- **F1** (2022 / 2023 / 2024):
+    - *All platforms*
+- **Le Mans Ultimate** :
+    - *PC*
 
 ## Features
 
@@ -67,7 +69,7 @@ python3 lmu/server.py
 python3 app.py
 ```
 
-Then open your browser and navigate to `http://127.0.0.1:5000`.
+The app should be automatically opened in a new tab
 
 ## External Code Used
 
