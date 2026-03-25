@@ -2,7 +2,7 @@
 
 ## What is this?
 
-SimStrategist is a Flask web app that displays and analyses live in-game telemetry from racing simulators. It currently supports **F1 2022/2023/2024** (via binary UDP packets) and has placeholder support for **Le Mans Ultimate** (LMU, via JSON over TCP/UDP).
+SimStrategist is a Flask web app that displays and analyses live in-game telemetry from racing simulators. It supports **F1 2018–2024** (Gen 2–5, via binary UDP packets), with the game version auto-detected per packet. It also has placeholder support for **Le Mans Ultimate** (LMU, via JSON over TCP/UDP). F1 2017 (Gen 1 legacy format) is not supported.
 
 A Claude-powered AI strategy analyser is built in, using real-time weather and tyre data to recommend pit strategies. The live telemetry dashboard also includes a **Driver Inputs** panel showing throttle, brake, clutch, and steering — switchable between a bar view and a scrolling graph.
 
@@ -190,11 +190,23 @@ The replayer sends packets to the local UDP port, so the app processes them exac
 ## How telemetry flows (step by step)
 
 1. **F1 game** sends binary UDP datagrams to port `20777` at ~20 Hz.
-2. **`UdpListener`** (`f1/server.py`) receives each datagram, reads the 24-byte header to find the `packet_id` and `player_car_index`, then calls the appropriate `F1PacketParser` static method.
+2. **`UdpListener`** (`f1/server.py`) receives each datagram and peeks at the first 2 bytes (`packet_format`) to determine the game generation, then selects the appropriate header layout before parsing `packet_id` and `player_car_index`.
 3. The parsed dict is passed to `state.update_telemetry()` / `update_lap_data()` / `update_session()` in **`TelemetryState`** (`f1/telemetry_state.py`).
 4. `TelemetryState` holds the latest values plus a **numpy circular buffer** (2400 points = 120 s at 20 Hz) for history charts.
 5. **`app.py`** exposes `/api/telemetry/stream` as a **Server-Sent Events** endpoint. It polls `state.last_update_time` every 16 ms and pushes a JSON snapshot whenever new data arrives.
 6. The browser receives SSE events and updates the live dashboard without polling.
+
+### Game version detection
+
+The server auto-detects the F1 game generation from the `packet_format` field (first 2 bytes of every packet, equal to the game year). No manual configuration is needed.
+
+| `packet_format` value | Generation | Header size | Notes |
+| --- | --- | --- | --- |
+| 2022–2024 | Gen 5 | 28 bytes | Includes `overall_frame_id` and `secondary_player_car_index` |
+| 2018–2021 | Gen 2–4 | 23 bytes | Original modern header; `player_car_index` at field position 8 |
+| ≤ 2017 | Gen 1 | — | Not supported; packets are silently skipped |
+
+The correct `header_size` is computed once per packet and passed into each parser method (`parse_car_telemetry`, `parse_lap_data`, `parse_session_data`, `parse_car_status`) so that the offset into per-car data arrays is always correct.
 
 ### Why `use_reloader=False`?
 

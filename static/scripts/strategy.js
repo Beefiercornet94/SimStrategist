@@ -22,7 +22,9 @@ const COMPOUND_COLOUR = {
 
 // ── State ──────────────────────────────────────────────────────────────────────
 
-let activeGame = 'f1';
+let activeGame = 'f1-2024';
+
+function gameFamily(g) { return g.startsWith('f1') ? 'f1' : g; }
 let analysisRunning = false;
 let noSignalModal = null;
 let wasConnected = false;
@@ -79,7 +81,7 @@ function updateSessionSummary(data) {
     const t    = data.telemetry;
     const lap  = data.lap_data;
     const sess = data.session;
-    const isF1 = activeGame === 'f1';
+    const isF1 = gameFamily(activeGame) === 'f1';
 
     // Badge
     const badge = document.getElementById('conn-badge');
@@ -142,7 +144,7 @@ function updateSessionSummary(data) {
 
 async function refreshWeatherHistory() {
     try {
-        const resp = await fetch(`/api/weather/history?game=${activeGame}`);
+        const resp = await fetch(`/api/weather/history?game=${gameFamily(activeGame)}`);
         const entries = await resp.json();
         renderWeatherHistory(entries);
     } catch (_) {}
@@ -429,7 +431,7 @@ async function runAnalysis() {
         const resp = await fetch('/api/strategy/ai', {
             method:  'POST',
             headers: { 'Content-Type': 'application/json' },
-            body:    JSON.stringify({ game: activeGame }),
+            body:    JSON.stringify({ game: gameFamily(activeGame) }),
         });
         const result = await resp.json();
         renderAiStrategy(result);
@@ -447,7 +449,7 @@ async function runAnalysis() {
 
 async function poll() {
     try {
-        const resp = await fetch(`/api/telemetry${activeGame === 'lmu' ? '?game=lmu' : ''}`);
+        const resp = await fetch(`/api/telemetry${gameFamily(activeGame) === 'lmu' ? '?game=lmu' : ''}`);
         const data = await resp.json();
         updateSessionSummary(data);
         renderRecommendations(buildRecommendations(data));
@@ -459,15 +461,14 @@ async function poll() {
 
 // ── Game toggle ────────────────────────────────────────────────────────────────
 
-document.querySelectorAll('#game-toggle button').forEach(btn => {
-    btn.addEventListener('click', () => {
-        document.querySelectorAll('#game-toggle button').forEach(b => {
-            b.classList.replace('btn-primary', 'btn-outline-primary');
-            b.classList.remove('active');
-        });
-        btn.classList.replace('btn-outline-primary', 'btn-primary');
-        btn.classList.add('active');
-        activeGame = btn.dataset.game;
+document.querySelectorAll('#game-select .dropdown-item').forEach(item => {
+    item.addEventListener('click', (e) => {
+        e.preventDefault();
+        document.querySelectorAll('#game-select .dropdown-item').forEach(i => i.classList.remove('active'));
+        item.classList.add('active');
+
+        activeGame = item.dataset.game;
+        document.getElementById('game-select-btn').textContent = item.textContent.trim();
 
         // Reset AI panel when switching game
         document.getElementById('ai-strategy-grid').style.display = 'none';

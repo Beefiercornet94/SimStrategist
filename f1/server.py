@@ -62,17 +62,10 @@ class F1PacketParser:
         }
 
     @staticmethod
-    def parse_car_telemetry(packet, player_index):
+    def parse_car_telemetry(packet, player_index, header_size=None):
         """Parse Car Telemetry Data (ID 6)"""
-        # Header is 24 bytes (29 in 2024 spec, let's assume 2023 spec for MVP compatibility)
-        # But wait, header size varies by year. 
-        # F1 23 Header is 29 bytes. F1 22 is 24 bytes.
-        # Let's target F1 23/24 which uses 29 byte header.
-        
-        # Header size logic: F1 2024 uses 28/29 bytes? 
-        # We use dynamic calculation from F1PacketParser.parse_header's format.
-        header_fmt = '<HBBBBQfIIBB'
-        header_size = struct.calcsize(header_fmt)
+        if header_size is None:
+            header_size = struct.calcsize('<HBBBBQfIIBB')
         
         # Each car data is 60 bytes
         # struct CarTelemetryData {
@@ -128,10 +121,10 @@ class F1PacketParser:
         }
 
     @staticmethod
-    def parse_lap_data(packet, player_index):
+    def parse_lap_data(packet, player_index, header_size=None):
         """Parse Lap Data (ID 2)"""
-        header_fmt = '<HBBBBQfIIBB'
-        header_size = struct.calcsize(header_fmt)
+        if header_size is None:
+            header_size = struct.calcsize('<HBBBBQfIIBB')
         
         # struct LapData {
         #    uint32 m_lastLapTimeInMS;               // Last lap time in milliseconds
@@ -190,13 +183,13 @@ class F1PacketParser:
         }
 
     @staticmethod
-    def parse_session_data(packet):
+    def parse_session_data(packet, header_size=None):
         """
         Parse Session Data (ID 1)
         Extracts weather, track temperature, session type, etc.
         """
-        header_fmt = '<HBBBBBQ fIIBB'
-        header_size = struct.calcsize(header_fmt)
+        if header_size is None:
+            header_size = struct.calcsize('<HBBBBQfIIBB')
         
         # Session packet structure (simplified for key fields)
         # Format: B(Weather), B(TrackTemp), B(AirTemp), B(TotalLaps), H(SessionTime), B(SessionType), B(TrackID), B(Formula)
@@ -225,7 +218,7 @@ class F1PacketParser:
             return None
 
     @staticmethod
-    def parse_car_status(packet, player_index):
+    def parse_car_status(packet, player_index, header_size=None):
         """
         Parse Car Status Data (ID 7).
         Extracts tyre compound, tyre age, fuel in tank, and fuel remaining laps.
@@ -258,8 +251,8 @@ class F1PacketParser:
           B  networkPaused
         Total: 55 bytes per car
         """
-        header_fmt  = '<HBBBBQfIIBB'
-        header_size = struct.calcsize(header_fmt)
+        if header_size is None:
+            header_size = struct.calcsize('<HBBBBQfIIBB')
 
         car_fmt  = '<BBBBBfffHHBBHBBBbfffBfffB'
         car_size = struct.calcsize(car_fmt)   # 55 bytes
@@ -365,37 +358,50 @@ class UdpListener(threading.Thread):
                             if pkt_count % 500 == 0:
                                 self._rec_file.flush()
 
-                    # F1 24 Header Format with Overall Frame ID and Secondary Player Index
-                    header_fmt = '<HBBBBQfIIBB'
+                    # Detect game generation from packet_format (first 2 bytes)
+                    if len(data) < 2:
+                        continue
+                    packet_format = struct.unpack_from('<H', data, 0)[0]
+
+                    if packet_format >= 2022:
+                        # Gen 5 (F1 2022-2024): added overall_frame_id + secondary_player_car_index
+                        header_fmt = '<HBBBBQfIIBB'
+                        player_idx_pos = 9
+                    elif packet_format >= 2018:
+                        # Gen 2-4 (F1 2018-2021): original modern header, no overall_frame_id
+                        header_fmt = '<HBBBBQfIB'
+                        player_idx_pos = 8
+                    else:
+                        # Gen 1 (F1 2017 legacy): not supported
+                        logger.debug(f"Legacy packet format {packet_format} not supported, skipping")
+                        continue
+
                     header_size = struct.calcsize(header_fmt)
-                    
                     if len(data) < header_size:
                         continue
-                        
-                    # Unpack header
+
                     header_raw = struct.unpack(header_fmt, data[:header_size])
                     packet_id = header_raw[4]
-                    player_index = header_raw[9]  # secondary player index (F1 24 header offset 9)
+                    player_index = header_raw[player_idx_pos]
 
                     # Route each packet type to its parser; other packet IDs are ignored
                     if packet_id == PACKET_ID_CAR_TELEMETRY:
-                        result = F1PacketParser.parse_car_telemetry(data, player_index)
+                        result = F1PacketParser.parse_car_telemetry(data, player_index, header_size)
                         if result:
                             state.update_telemetry(result)
-                            
+
                     elif packet_id == PACKET_ID_LAP_DATA:
-                        result = F1PacketParser.parse_lap_data(data, player_index)
+                        result = F1PacketParser.parse_lap_data(data, player_index, header_size)
                         if result:
                             state.update_lap_data(result)
-                            
+
                     elif packet_id == PACKET_ID_SESSION:
-                        # Complete session packet parsing
-                        result = F1PacketParser.parse_session_data(data)
+                        result = F1PacketParser.parse_session_data(data, header_size)
                         if result:
                             state.update_session(result)
 
                     elif packet_id == PACKET_ID_CAR_STATUS:
-                        result = F1PacketParser.parse_car_status(data, player_index)
+                        result = F1PacketParser.parse_car_status(data, player_index, header_size)
                         if result:
                             state.update_telemetry(result)
 

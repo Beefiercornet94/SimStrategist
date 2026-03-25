@@ -195,6 +195,7 @@ def strategy():
     return render_template("strategy.html")
 
 
+
 #---------- SETTINGS / SETUP ----------#
 
 @app.route("/setup")

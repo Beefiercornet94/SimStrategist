@@ -6,10 +6,14 @@ SimStrategist is a tool that displays and analyses live in-game telemetry from v
 
 ### Compatible Simulators
 
-- **F1** (2022 / 2023 / 2024):
-    - *All platforms*
-- **Le Mans Ultimate** :
-    - *PC*
+| Generation | Games | Platforms |
+| --- | --- | --- |
+| Gen 5 | F1 2022, F1 2023, F1 2024 | All |
+| Gen 4 | F1 2021 | All |
+| Gen 3 | F1 2020 | All |
+| Gen 2 | F1 2018, F1 2019 | All |
+| ~~Gen 1~~ | ~~F1 2017~~ | — Not supported |
+| — | Le Mans Ultimate | PC |
 
 ## Features
 
@@ -24,24 +28,38 @@ SimStrategist is a tool that displays and analyses live in-game telemetry from v
 
 ## Usage
 
-### Connecting F1 (2022 / 2023 / 2024)
+### Connecting an F1 Game (2018 – 2024)
+
+SimStrategist auto-detects the game version from each packet, so no manual version configuration is needed on the SimStrategist side. The steps below apply to all supported generations.
 
 1. In the F1 game, go to **Settings → Telemetry Settings**.
 2. Set **UDP Telemetry** to `On`.
 3. Set **UDP Broadcast Mode** to `Off`.
 4. Set **UDP IP Address** to the IP of the machine running SimStrategist:
-    - Use `127.0.0.1` if on the same PC
-    - Find the IP address of the PC running it if you are using a seperate device
+    - Use `127.0.0.1` if running on the same PC.
+    - Use the machine's local IP address if running SimStrategist on a separate device.
 5. Set **UDP Port** to `20777`.
 6. Set **UDP Send Rate** to `20Hz` (recommended).
-7. Set **UDP Format** to match your game year (e.g. `2023`).
-8. Start the telemetry listener:
+7. Set **UDP Format** to match your game year — see the table below.
+8. In the SimStrategist web app, use the **game dropdown** (top of the Telemetry or Strategy page) to select your game.
+9. Start the telemetry listener:
 
 ```bash
 python3 f1/server.py
 ```
 
 > The listener receives data on **UDP port 20777**. Make sure your firewall allows this port if the game runs on a different machine.
+
+#### UDP Format setting by generation
+
+| Generation | Games | Set UDP Format to |
+| --- | --- | --- |
+| Gen 5 | F1 2022, F1 2023, F1 2024 | Match the game year (e.g. `2024`) |
+| Gen 4 | F1 2021 | `2021` |
+| Gen 3 | F1 2020 | `2020` |
+| Gen 2 | F1 2018, F1 2019 | `2019` or `2018` |
+
+> **Newer games only:** F1 2022–2024 include a *UDP Format* setting that lets you downgrade the output to an older spec. Always set it to match your actual game year — do not downgrade unless you have a specific reason to.
 
 ---
 

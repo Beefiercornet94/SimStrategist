@@ -72,7 +72,9 @@ function showClassRing(show) {
 
 
 // ---------- state ----------
-let activeGame = 'f1';
+let activeGame = 'f1-2024';
+
+function gameFamily(g) { return g.startsWith('f1') ? 'f1' : g; }
 let es = null;        // active EventSource
 let isRecording = false;
 let noSignalModal = null;
@@ -131,7 +133,7 @@ function render(data) {
     const t       = data.telemetry;
     const lap     = data.lap_data;
     const sess    = data.session;
-    const isF1    = activeGame === 'f1';
+    const isF1    = gameFamily(activeGame) === 'f1';
 
     // Connection badge
     const badge = document.getElementById('conn-badge');
@@ -301,39 +303,37 @@ document.getElementById('record-btn').addEventListener('click', async () => {
     if (isRecording) {
         await stopRecording();
     } else {
-        await startRecording(activeGame);
+        await startRecording(gameFamily(activeGame));
     }
 });
 
-// ---------- toggle ----------
-document.querySelectorAll('#game-toggle button').forEach(btn => {
-    btn.addEventListener('click', async () => {
-        document.querySelectorAll('#game-toggle button').forEach(b => {
-            b.classList.replace('btn-primary', 'btn-outline-primary');
-            b.classList.remove('active');
-        });
-        btn.classList.replace('btn-outline-primary', 'btn-primary');
-        btn.classList.add('active');
+// ---------- game select dropdown ----------
+document.querySelectorAll('#game-select .dropdown-item').forEach(item => {
+    item.addEventListener('click', async (e) => {
+        e.preventDefault();
+        document.querySelectorAll('#game-select .dropdown-item').forEach(i => i.classList.remove('active'));
+        item.classList.add('active');
 
-        activeGame = btn.dataset.game;
+        activeGame = item.dataset.game;
+        document.getElementById('game-select-btn').textContent = item.textContent.trim();
 
         // Swap DRS/Fuel label
         document.getElementById('label-drs-fuel').textContent =
-            activeGame === 'f1' ? 'DRS' : 'Fuel';
+            gameFamily(activeGame) === 'f1' ? 'DRS' : 'Fuel';
 
         // If recording, stop the old game and start one for the new game
         if (isRecording) {
             await stopRecording();
-            await startRecording(activeGame);
+            await startRecording(gameFamily(activeGame));
         }
 
-        connect(activeGame);
+        connect(gameFamily(activeGame));
     });
 });
 
 // ---------- help modal: sync tab to active game ----------
 document.getElementById('connect-modal').addEventListener('show.bs.modal', () => {
-    const tabId = activeGame === 'lmu' ? 'tab-lmu' : 'tab-f1';
+    const tabId = gameFamily(activeGame) === 'lmu' ? 'tab-lmu' : 'tab-f1';
     bootstrap.Tab.getOrCreateInstance(document.getElementById(tabId)).show();
 });
 
