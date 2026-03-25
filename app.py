@@ -16,6 +16,9 @@ from f1.telemetry_state import state as f1_state
 from lmu.server import TcpListener as LmuTcpListener
 from lmu.telemetry_state import state as lmu_state
 
+from forza_hrzn.server import UdpListener as ForzaHrznUdpListener
+from forza_hrzn.telemetry_state import state as forza_hrzn_state
+
 from strategy.weather_history import weather_history
 from strategy.ai_strategy import analyze_strategy
 
@@ -31,6 +34,9 @@ _udp_listener.start()
 
 _lmu_listener = LmuTcpListener()
 _lmu_listener.start()
+
+_forza_hrzn_listener = ForzaHrznUdpListener()
+_forza_hrzn_listener.start()
 
 # Samples weather from the live telemetry state every 10 s so the AI strategist
 # has a complete picture of how conditions evolved over the race.
@@ -113,7 +119,12 @@ def api_telemetry_stream():
     Pushes a JSON event on every new data frame; keepalive every 500 ms otherwise.
     """
     game = request.args.get("game", "f1").lower()
-    src  = lmu_state if game == "lmu" else f1_state
+    if game == "lmu":
+        src = lmu_state
+    elif game == "forza_hrzn":
+        src = forza_hrzn_state
+    else:
+        src = f1_state
 
     def generate():
         last_seen = 0.0
