@@ -16,6 +16,30 @@
         <span id="conn-badge" class="badge bg-secondary">Connecting...</span>
     </div>
 
+    <!-- No-signal modal -->
+    <div class="modal fade" id="no-signal-modal" tabindex="-1" aria-labelledby="no-signal-label" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content bg-dark text-white border-danger">
+                <div class="modal-header border-danger">
+                    <h5 class="modal-title fw-bold text-danger" id="no-signal-label">&#9888; No Telemetry Signal</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="mb-2">SimStrategist is not receiving any telemetry data.</p>
+                    <ul class="text-secondary mb-3" style="font-size:.9rem; line-height:1.8">
+                        <li>Make sure your game is running and a session is active.</li>
+                        <li>For <strong>F1</strong>: run <code>python3 f1/server.py</code> and verify UDP output is enabled in game settings.</li>
+                        <li>For <strong>LMU</strong>: run <code>python3 lmu/server.py</code> and verify the JSON Telemetry Plugin is installed.</li>
+                    </ul>
+                    <p class="text-secondary mb-0" style="font-size:.85rem;">This dialog will close automatically once a signal is detected.</p>
+                </div>
+                <div class="modal-footer border-secondary">
+                    <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Dismiss</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- ── Session Summary ───────────────────────────────────────────────── -->
     <div class="dash-card mb-4">
         <div class="telemetry-section-title">Session Summary</div>

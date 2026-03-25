@@ -75,6 +75,22 @@ function showClassRing(show) {
 let activeGame = 'f1';
 let es = null;        // active EventSource
 let isRecording = false;
+let noSignalModal = null;
+
+function getNoSignalModal() {
+    if (!noSignalModal) noSignalModal = new bootstrap.Modal(document.getElementById('no-signal-modal'));
+    return noSignalModal;
+}
+
+function showNoSignal() {
+    const m = document.getElementById('no-signal-modal');
+    if (!m.classList.contains('show')) getNoSignalModal().show();
+}
+
+function hideNoSignal() {
+    const m = document.getElementById('no-signal-modal');
+    if (m.classList.contains('show')) getNoSignalModal().hide();
+}
 
 // ---------- formatters ----------
 function fmtMs(ms) {
@@ -231,12 +247,18 @@ function connect(game) {
     es = new EventSource(`/api/telemetry/stream?game=${game}`);
 
     es.onmessage = (e) => {
-        try { render(JSON.parse(e.data)); } catch (_) {}
+        try {
+            const data = JSON.parse(e.data);
+            render(data);
+            if (data.connected) hideNoSignal();
+            else showNoSignal();
+        } catch (_) {}
     };
 
     es.onerror = () => {
         document.getElementById('conn-badge').textContent = 'Disconnected';
         document.getElementById('conn-badge').className   = 'badge bg-danger';
+        showNoSignal();
     };
 }
 

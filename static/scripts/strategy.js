@@ -24,6 +24,26 @@ const COMPOUND_COLOUR = {
 
 let activeGame = 'f1';
 let analysisRunning = false;
+let noSignalModal = null;
+let wasConnected = false;
+
+function getNoSignalModal() {
+    if (!noSignalModal) noSignalModal = new bootstrap.Modal(document.getElementById('no-signal-modal'));
+    return noSignalModal;
+}
+
+function handleConnectionState(connected) {
+    if (connected) {
+        wasConnected = true;
+        // Hide modal if it's open
+        const m = document.getElementById('no-signal-modal');
+        if (m.classList.contains('show')) getNoSignalModal().hide();
+    } else if (wasConnected || document.getElementById('conn-badge').textContent !== 'Connecting...') {
+        // Only show popup once we've had a real response (not during initial connecting state)
+        const m = document.getElementById('no-signal-modal');
+        if (!m.classList.contains('show')) getNoSignalModal().show();
+    }
+}
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
@@ -65,6 +85,7 @@ function updateSessionSummary(data) {
     const badge = document.getElementById('conn-badge');
     badge.textContent = data.connected ? 'Connected' : 'Disconnected';
     badge.className   = 'badge ' + (data.connected ? 'bg-success' : 'bg-danger');
+    handleConnectionState(data.connected);
 
     document.getElementById('s-position').textContent = lap.car_position || '--';
     document.getElementById('s-lap').textContent      = lap.current_lap  || '--';
@@ -432,6 +453,7 @@ async function poll() {
         renderRecommendations(buildRecommendations(data));
     } catch (_) {
         renderRecommendations([{ severity: 'alert', msg: 'Could not reach telemetry API.' }]);
+        handleConnectionState(false);
     }
 }
 
