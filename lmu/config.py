@@ -13,9 +13,9 @@ class Config:
     # Default mode is a persistent TCP connection; UDP is available via --udp flag.
     # ============================================================================
     TCP_HOST    = '127.0.0.1'
-    TCP_PORT    = 5100
+    TCP_PORT    = 5000
     UDP_HOST    = '127.0.0.1'
-    UDP_PORT    = 5100
+    UDP_PORT    = 5000
     UDP_BUFSIZE = 65535   # max UDP datagram; TCP uses readline
 
     # ============================================================================

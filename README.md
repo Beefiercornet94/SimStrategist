@@ -6,15 +6,15 @@ SimStrategist is a tool that displays and analyses live in-game telemetry from v
 
 ### Compatible Simulators
 
-| Generation | Games | Platforms |
+| Game(s) | Generation | Platforms |
 | --- | --- | --- |
-| Gen 5 | F1 2022, F1 2023, F1 2024 | All |
-| Gen 4 | F1 2021 | All |
-| Gen 3 | F1 2020 | All |
-| Gen 2 | F1 2018, F1 2019 | All |
-| — | Le Mans Ultimate | PC |
-| - | Forza Horizon 5 | All |
-| - | Forza Horizon 4 | All |
+| F1 2022, F1 2023, F1 2024 | Gen 5 | All |
+| F1 2021 | Gen 4 | All |
+| F1 2020 | Gen 3 | |
+| F1 2018, F1 2019 | Gen 2 | All |
+| Le Mans Ultimate | - | PC |
+| Forza Horizon 5 | - | All |
+| Forza Horizon 4 | - | All |
 
 ## Features
 
@@ -53,7 +53,7 @@ python3 f1/server.py
 
 #### UDP Format setting by generation
 
-| Generation | Games | Set UDP Format to |
+| Games | Generation | Set UDP Format to |
 | --- | --- | --- |
 | Gen 5 | F1 2022, F1 2023, F1 2024 | Match the game year (e.g. `2024`) |
 | Gen 4 | F1 2021 | `2021` |
@@ -68,8 +68,8 @@ python3 f1/server.py
 
 1. Download and install the **Ultimate Telemetry Socket – JSON Telemetry Plugin** from the Le Mans Ultimate community forums.
 2. Place the plugin DLL in your LMU `Plugins` folder.
-3. In the plugin configuration file, set the port to `5100` and the output host as below:
-    - Use `127.0.0.1` as the output hostif on the same PC
+3. In the plugin configuration file, set the port to `5000` and the output host as below:
+    - Use `127.0.0.1` as the output host if on the same PC
     - Find the IP address of the PC running it if you are using a seperate device
 4. Start Le Mans Ultimate — the plugin will begin sending telemetry automatically.
 5. Start the telemetry listener:
