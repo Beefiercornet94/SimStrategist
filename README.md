@@ -11,11 +11,12 @@ SimStrategist is a tool that displays and analyses live in-game telemetry from v
 | --- | --- | --- |
 | F1 2022, F1 2023, F1 2024 | Gen 5 | All |
 | F1 2021 | Gen 4 | All |
-| F1 2020 | Gen 3 | |
+| F1 2020 | Gen 3 | All |
 | F1 2018, F1 2019 | Gen 2 | All |
 | Le Mans Ultimate | - | PC |
 | Forza Horizon 5 | - | All |
 | Forza Horizon 4 | - | All |
+| RaceRoom | - | PC (Windows) |
 
 ## Features
 
@@ -54,12 +55,12 @@ python3 f1/server.py
 
 #### UDP Format setting by generation
 
-| Games | Generation | Set UDP Format to |
+| Generation | Game(s) | Set UDP Format to |
 | --- | --- | --- |
 | Gen 5 | F1 2022, F1 2023, F1 2024 | Match the game year (e.g. `2024`) |
 | Gen 4 | F1 2021 | `2021` |
 | Gen 3 | F1 2020 | `2020` |
-| Gen 2 | F1 2018, F1 2019 | `2019` or `2018` |
+| Gen 2 | F1 2018, F1 2019 | Match the game year (e.g. `2019`) |
 
 > **Newer games only:** F1 2022–2024 include a *UDP Format* setting that lets you downgrade the output to an older spec. Always set it to match your actual game year — do not downgrade unless you have a specific reason to.
 

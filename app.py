@@ -19,6 +19,9 @@ from lmu.telemetry_state import state as lmu_state
 from forza_hrzn.server import UdpListener as ForzaHrznUdpListener
 from forza_hrzn.telemetry_state import state as forza_hrzn_state
 
+from race_room.server import SharedMemoryReader as RaceRoomReader
+from race_room.telemetry_state import state as race_room_state
+
 from strategy.weather_history import weather_history
 from strategy.ai_strategy import analyze_strategy
 
@@ -37,6 +40,9 @@ _lmu_listener.start()
 
 _forza_hrzn_listener = ForzaHrznUdpListener()
 _forza_hrzn_listener.start()
+
+_raceroom_reader = RaceRoomReader()
+_raceroom_reader.start()
 
 # Samples weather from the live telemetry state every 10 s so the AI strategist
 # has a complete picture of how conditions evolved over the race.
